@@ -48,7 +48,12 @@ app.use(express.static(`${__dirname}/public`));
 
 // Routes
 const cabinRouter = require('./routes/cabinRoute');
+const BookingRouter = require('./routes/bookingRoute');
+const GuestRouter = require('./routes/guestRoute');
+
 app.use('/cabins', cabinRouter);
+app.use('/bookings', BookingRouter);
+app.use('/guests', GuestRouter);
 
 // Handling unmatched routes
 app.all('*', (req, res, next) => {

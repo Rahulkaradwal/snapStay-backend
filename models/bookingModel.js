@@ -57,7 +57,7 @@ const bookingSchema = new mongoose.Schema({
     required: [true, 'guest is required'],
   },
   createdAt: {
-    type: date,
+    type: Date,
     default: Date.now(),
   },
 });
