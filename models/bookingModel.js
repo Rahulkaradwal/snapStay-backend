@@ -34,7 +34,6 @@ const bookingSchema = new mongoose.Schema({
     type: String,
     enum: ['confirmed', 'unconfirmed'],
     default: 'unconfirmed',
-    required: [true, 'Number of Nights is required'],
   },
   hasBreakfast: {
     type: Boolean,
@@ -47,12 +46,12 @@ const bookingSchema = new mongoose.Schema({
   observations: {
     type: String,
   },
-  cabin: {
+  cabinId: {
     type: mongoose.Schema.ObjectId,
     ref: 'Cabin',
     required: [true, 'Cabin is required'],
   },
-  guest: {
+  guestId: {
     type: mongoose.Schema.ObjectId,
     ref: 'Guest',
     required: [true, 'guest is required'],

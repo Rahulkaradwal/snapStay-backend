@@ -16,6 +16,12 @@ const guestSchema = new mongoose.Schema({
   nationality: {
     type: String,
   },
+  nationalID: {
+    type: String,
+  },
+  countryFlag: {
+    type: String,
+  },
   createdAt: {
     type: Date,
     default: Date.now(),
