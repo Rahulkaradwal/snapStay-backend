@@ -2,7 +2,7 @@ const Cabin = require('../models/cabinModel');
 const handler = require('../utils/Handler');
 
 // get all cabins
-exports.getAllCabin = handler.getAll(Cabin);
+exports.getAllCabins = handler.getAll(Cabin);
 
 // get a cabin
 exports.getCabin = handler.getOne(Cabin);

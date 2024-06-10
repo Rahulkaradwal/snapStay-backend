@@ -47,13 +47,8 @@ const limiter = rateLimit({
 app.use(express.static(`${__dirname}/public`));
 
 // Routes
-
-app.get('/', (req, res) => {
-  console.log('In the route');
-  res.status(200).json({
-    data: 'Hello From Server',
-  });
-});
+const cabinRouter = require('./routes/cabinRoute');
+app.use('/cabins', cabinRouter);
 
 // Handling unmatched routes
 app.all('*', (req, res, next) => {

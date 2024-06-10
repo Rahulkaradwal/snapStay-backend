@@ -29,7 +29,7 @@ exports.getAll = (Model) => {
 exports.getOne = (Model) => {
   return catchAsync(async (req, res, next) => {
     try {
-      const data = await Model.findById(req.params);
+      const data = await Model.findById(req.params.id);
       if (!data) {
         res.status(400).json({
           status: 'success',
@@ -87,20 +87,20 @@ exports.updateOne = (Model) => {
 // Delete Cabin
 
 exports.deleteOne = (Model) => {
-  catchAsync(async (req, res, next) => {
+  return catchAsync(async (req, res, next) => {
     try {
       const data = await Model.findByIdAndDelete(req.params.id);
       if (!data) {
-        next(new AppError('Sorry, No data found', 404));
+        return next(new AppError('Sorry, no data found', 404));
       }
 
-      res.status(200).json({
-        status: 200,
+      res.status(204).json({
+        status: 'success',
         data: null,
       });
     } catch (err) {
       next(
-        new AppError('Inernal server Error, Could not delete the cabin', 400)
+        new AppError('Internal server error, could not delete the cabin', 500)
       );
     }
   });

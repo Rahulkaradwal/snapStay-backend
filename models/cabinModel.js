@@ -1,6 +1,4 @@
 const mongoose = require('mongoose');
-const { type } = require('os');
-const { float, double } = require('webidl-conversions');
 
 const cabinSchema = new mongoose.Schema({
   name: {
@@ -12,17 +10,22 @@ const cabinSchema = new mongoose.Schema({
     required: [true, 'Capacity is required'],
   },
   regularPrice: {
-    type: double,
+    type: Number,
     required: [true, 'Price is required'],
   },
   discount: {
-    type: double,
+    type: Number,
   },
   description: {
     type: String,
   },
-  image: { type: String },
-  createdAt: { type: Date, default: Date.now() },
+  image: {
+    type: String,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
 });
 
 const Cabin = mongoose.model('Cabin', cabinSchema);
