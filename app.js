@@ -48,6 +48,13 @@ app.use(express.static(`${__dirname}/public`));
 
 // Routes
 
+app.get('/', (req, res) => {
+  console.log('In the route');
+  res.status(200).json({
+    data: 'Hello From Server',
+  });
+});
+
 // Handling unmatched routes
 app.all('*', (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
