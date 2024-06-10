@@ -1,30 +1,30 @@
 const catchAsync = require('./CatchAsync');
 const AppError = require('./AppError');
+const QueryFeatures = require('./QueryFeatures');
 
-// get all cabins
+// get all Model
 exports.getAll = (Model) => {
   return catchAsync(async (req, res, next) => {
-    try {
-      const data = await Model.find();
-      if (!data)
-        res.status(404).json({
-          status: 'success',
-          data: null,
-        });
+    let filter = {};
+    if (req.params.id) filter = { _id: req.params.id }; // Use _id for MongoDB
 
-      res.status(200).json({
-        status: 'success',
-        data: data,
-      });
-    } catch (err) {
-      next(
-        new AppError('Something went wrong with Cabin Data in the server', 404)
-      );
-    }
+    const features = new QueryFeatures(Model.find(filter), req.query)
+      .filter()
+      .sort()
+      .limit()
+      .page();
+
+    const data = await features.query;
+
+    res.status(200).json({
+      status: 'success',
+      totalResult: data.length,
+      data,
+    });
   });
 };
 
-// get a cabin
+// get a Model
 
 exports.getOne = (Model) => {
   return catchAsync(async (req, res, next) => {
@@ -46,7 +46,7 @@ exports.getOne = (Model) => {
   });
 };
 
-// create cabin
+// create Model
 
 exports.addOne = (Model) => {
   return catchAsync(async (req, res, next) => {
@@ -62,7 +62,7 @@ exports.addOne = (Model) => {
   });
 };
 
-// Update Cabin
+// Update Model
 
 exports.updateOne = (Model) => {
   return catchAsync(async (req, res, next) => {
@@ -84,7 +84,7 @@ exports.updateOne = (Model) => {
   });
 };
 
-// Delete Cabin
+// Delete Model
 
 exports.deleteOne = (Model) => {
   return catchAsync(async (req, res, next) => {
