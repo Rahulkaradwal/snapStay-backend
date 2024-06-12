@@ -45,6 +45,8 @@ const userSchema = new mongoose.Schema({
     select: false,
   },
   passwordChangedAt: Date,
+  passwordResetToken: String,
+  passwordResetExpires: Date,
 });
 
 // hash the password when user signup
@@ -76,6 +78,18 @@ userSchema.methods.changePasswordAfter = function (jwtTimeStamp) {
     return jwtTimeStamp < changedTimeStamp;
   }
   return false;
+};
+
+// create password Reset Token
+userSchema.methods.createPasswordResetToken = function () {
+  const resetToken = crypto.randomBytes(32).toString('hex');
+  this.passwordResetToken = crypto
+    .createHash('sha256')
+    .update(resetToken)
+    .digest('hex');
+
+  this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
+  return resetToken;
 };
 
 const User = mongoose.model('User', userSchema);
