@@ -78,13 +78,10 @@ exports.protect = catchAsync(async (req, res, next) => {
   try {
     decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
 
-    console.log(decoded);
-
     if (!decoded) {
       throw new Error('Invalid token');
     }
   } catch (err) {
-    console.error(`Token verification error: ${err.message}`);
     return next(
       new AppError('Invalid or expired token, please log in again.', 401)
     );
@@ -92,10 +89,15 @@ exports.protect = catchAsync(async (req, res, next) => {
 
   // Check if the user still exists
   const freshUser = await User.findById(decoded.id);
-  console.log(freshUser);
 
   if (!freshUser) {
     return next(new AppError('User not found, please log in again.', 401));
+  }
+
+  if (freshUser.changePasswordAfter(decoded.iat)) {
+    return next(
+      new AppError('User recently changed password, please login again', 401)
+    );
   }
 
   // Attach the user to the request object
