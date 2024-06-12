@@ -1,11 +1,16 @@
 const bookingController = require('../controllers/bookingController');
+const authController = require('../controllers/authController');
 
 const express = require('express');
 const router = express.Router();
 
 router
   .route('/')
-  .get(bookingController.getAllBookings)
+  .get(
+    authController.protect,
+    authController.restrictTo('admin'),
+    bookingController.getAllBookings
+  )
   .post(bookingController.addBooking);
 
 router

@@ -100,7 +100,7 @@ exports.protect = catchAsync(async (req, res, next) => {
   }
 
   // Check if the user still exists
-  const freshUser = await User.findById(decoded.id);
+  const freshUser = await User.findById(decoded.id).select('+role');
 
   if (!freshUser) {
     return next(new AppError('User not found, please log in again.', 401));
@@ -119,15 +119,16 @@ exports.protect = catchAsync(async (req, res, next) => {
 
 // restrict access to route
 
-exports.restrict = (...roles) => {
+exports.restrictTo = (...roles) => {
   return (req, res, next) => {
-    if (!roles.includes(req.user.role))
+    if (!roles.includes(req.user.role)) {
       return next(
         new AppError(
-          'Sorry, you do not have permission to perform this access',
+          'You do not have permission to perform this this action',
           403
         )
       );
+    }
     next();
   };
 };

@@ -44,6 +44,7 @@ const userSchema = new mongoose.Schema({
     required: [true, 'Please confirm your password'],
     select: false,
   },
+  passwordChangedAt: Date,
 });
 
 // hash the password when user signup
@@ -64,8 +65,9 @@ userSchema.methods.comparePassword = async function (
 
 // check password change after
 
-userSchema.methods.changePasswordAfter = async function (jwtTimeStamp) {
+userSchema.methods.changePasswordAfter = function (jwtTimeStamp) {
   if (this.passwordChangedAt) {
+    console.log('change pswd');
     const changedTimeStamp = parseInt(
       this.passwordChangedAt.getTime() / 1000,
       10
