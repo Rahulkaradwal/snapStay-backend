@@ -16,20 +16,26 @@ exports.signup = catchAsync(async (req, res, next) => {
     confirmPassword: req.body.confirmPassword,
   };
   const newUser = await User.create(userData);
+  const user = {
+    fullName: newUser.fullName,
+    email: newUser.email,
+    nationality: newUser.nationality,
+    nationalID: newUser.nationalID,
+  };
 
   const token = SignToken(newUser._id.toString());
 
   res.status(200).json({
     status: 'success',
     token,
-    data: newUser,
+    data: user,
   });
 });
 
 // user login route
 exports.login = catchAsync(async (req, res, next) => {
-  const { email, passowrd } = req.body;
-  if (!email && !passowrd) {
+  const { email, password } = req.body;
+  if (!email && !password) {
     return next(new AppError('Please provide email and passowrd', 401));
   }
   const user = await User.findOne({ email }).select('+password');
@@ -40,13 +46,19 @@ exports.login = catchAsync(async (req, res, next) => {
   if (!user && !(await user.comparePassword(password, user.password))) {
     return next(new AppError('Incorrect Password', 401));
   }
+  const userData = {
+    fullName: user.fullName,
+    email: user.email,
+    nationality: user.nationality,
+    nationalID: user.nationalID,
+  };
 
   const token = SignToken(user._id.toString());
 
   res.status(201).json({
     status: 'success',
     token,
-    data: user,
+    data: userData,
   });
 });
 
