@@ -1,3 +1,4 @@
+const { hash } = require('bcryptjs');
 const mongoose = require('mongoose');
 const validator = require('validator');
 
@@ -17,6 +18,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: 'guest',
     enum: ['admin', 'guest'],
+    select: false,
   },
   nationality: {
     type: String,
@@ -24,14 +26,32 @@ const userSchema = new mongoose.Schema({
   nationalID: {
     type: String,
   },
-  countryFlag: {
-    type: String,
-  },
+  //   countryFlag: {
+  //     type: String,
+  //   },
   createdAt: {
     type: Date,
     default: Date.now(),
+  },
+  password: {
+    type: String,
+    required: [true, 'Please provide a password'],
+    minlength: 8,
+  },
+  confirmPassword: {
+    type: String,
+    required: [true, 'Please confirm your password'],
+    select: false,
   },
 });
 
 const User = mongoose.model('User', userSchema);
 module.exports = User;
+
+userSchema.pre('save', async function (next) {
+  console.log('in the middlewaea');
+  if (!this.isModified('password')) return next();
+  this.password = await hash(this.password, 12);
+  this.confirmPassword = undefined;
+  next();
+});

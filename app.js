@@ -47,13 +47,15 @@ const limiter = rateLimit({
 app.use(express.static(`${__dirname}/public`));
 
 // Routes
-const cabinRouter = require('./routes/cabinRoute');
+const CabinRouter = require('./routes/cabinRoute');
 const BookingRouter = require('./routes/bookingRoute');
 const GuestRouter = require('./routes/guestRoute');
+const UserRouter = require('./routes/userRoute');
 
-app.use('/cabins', cabinRouter);
+app.use('/cabins', CabinRouter);
 app.use('/bookings', BookingRouter);
 app.use('/guests', GuestRouter);
+app.use('/users', UserRouter);
 
 // Handling unmatched routes
 app.all('*', (req, res, next) => {
