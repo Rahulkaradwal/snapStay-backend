@@ -1,12 +1,11 @@
 const User = require('../models/userModel');
-const Handler = require('../utils/Handler');
 const catchAsync = require('../utils/CatchAsync');
-const signToken = require('../utils/SignToken');
 const AppError = require('../utils/AppError');
 const SignToken = require('../utils/SignToken');
+const { promisify } = require('util');
+const jwt = require('jsonwebtoken');
 
-// exports.addUser = Handler.addOne(User);
-
+// user singup route
 exports.signup = catchAsync(async (req, res, next) => {
   const userData = {
     fullName: req.body.fullName,
@@ -18,7 +17,7 @@ exports.signup = catchAsync(async (req, res, next) => {
   };
   const newUser = await User.create(userData);
 
-  const token = signToken(newUser._id.toString());
+  const token = SignToken(newUser._id.toString());
 
   res.status(200).json({
     status: 'success',
@@ -27,6 +26,7 @@ exports.signup = catchAsync(async (req, res, next) => {
   });
 });
 
+// user login route
 exports.login = catchAsync(async (req, res, next) => {
   const { email, passowrd } = req.body;
   if (!email && !passowrd) {
@@ -48,4 +48,57 @@ exports.login = catchAsync(async (req, res, next) => {
     token,
     data: user,
   });
+});
+
+// protect route for secure access
+
+exports.protect = catchAsync(async (req, res, next) => {
+  let token;
+
+  // Check if the authorization header is present and starts with 'Bearer'
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith('Bearer')
+  ) {
+    token = req.headers.authorization.split(' ')[1];
+  }
+
+  // If no token is found, return an authorization error
+  if (!token) {
+    return next(
+      new AppError(
+        'Sorry, you are not authorized to access this resource.',
+        401
+      )
+    );
+  }
+
+  // Verify the token
+  let decoded;
+  try {
+    decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+
+    console.log(decoded);
+
+    if (!decoded) {
+      throw new Error('Invalid token');
+    }
+  } catch (err) {
+    console.error(`Token verification error: ${err.message}`);
+    return next(
+      new AppError('Invalid or expired token, please log in again.', 401)
+    );
+  }
+
+  // Check if the user still exists
+  const freshUser = await User.findById(decoded.id);
+  console.log(freshUser);
+
+  if (!freshUser) {
+    return next(new AppError('User not found, please log in again.', 401));
+  }
+
+  // Attach the user to the request object
+  req.user = freshUser;
+  next();
 });
