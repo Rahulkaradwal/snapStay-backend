@@ -1,4 +1,4 @@
-const { hash } = require('bcryptjs');
+const bcrypt = require('bcrypt');
 const mongoose = require('mongoose');
 const validator = require('validator');
 
@@ -45,13 +45,13 @@ const userSchema = new mongoose.Schema({
   },
 });
 
-const User = mongoose.model('User', userSchema);
-module.exports = User;
-
+// hash the password when user signup
 userSchema.pre('save', async function (next) {
-  console.log('in the middlewaea');
   if (!this.isModified('password')) return next();
-  this.password = await hash(this.password, 12);
+  this.password = await bcrypt.hash(this.password, 12);
   this.confirmPassword = undefined;
   next();
 });
+
+const User = mongoose.model('User', userSchema);
+module.exports = User;
