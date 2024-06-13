@@ -4,6 +4,7 @@ const AppError = require('../utils/AppError');
 const SignToken = require('../utils/SignToken');
 const { promisify } = require('util');
 const jwt = require('jsonwebtoken');
+const sendEmail = require('../utils/NodeMailer');
 
 // user singup route
 exports.signup = catchAsync(async (req, res, next) => {
@@ -134,40 +135,53 @@ exports.restrictTo = (...roles) => {
 };
 
 exports.forgetPassword = catchAsync(async (req, res, next) => {
-  if (req.body.email) {
-    return next(AppError('Please provide your valid email', 404));
+  const { email } = req.body;
+
+  if (!email) {
+    return next(new AppError('Please provide your email.', 400));
   }
-  const user = await User.findOne({ email: req.body.email });
-  if (!user) return next(new AppError('Sorry, Could not find the user', 404));
+
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    // To prevent user enumeration, send a generic message
+    return res.status(200).json({
+      status: 'success',
+      message: 'Shortly! You will receive a link to reset your password.',
+    });
+  }
 
   const resetToken = user.createPasswordResetToken();
-
-  await User.save({ validateBeforeSave: false });
+  console.log(resetToken);
+  await user.save({ validateBeforeSave: false });
 
   const resetUrl = `${req.protocol}://${req.get(
     'host'
   )}/users/resetPassword/${resetToken}`;
-  const message = `Forgot your password? Submit a request with your new password and passwordConfirm to: ${resetUrl}.`;
+  const message = `Forgot your password? Submit a request with your new password and passwordConfirm to: ${resetUrl}.\nIf you did not request this, please ignore this email.`;
+  console.log('reset url', resetUrl);
 
   try {
     await sendEmail({
-      email: user.email,
+      to: user.email, // Correct the `to` field
       subject: 'Your password reset token (valid for 10 mins)',
       message,
     });
 
     res.status(200).json({
       status: 'success',
-      message: 'Token sent to email!',
+      message:
+        'If your email exists in our system, you will receive a reset token shortly.',
     });
   } catch (err) {
+    // Clean up the resetToken fields if sending email failed
     user.passwordResetToken = undefined;
     user.passwordResetExpires = undefined;
     await user.save({ validateBeforeSave: false });
 
     return next(
       new AppError(
-        'There was an error sending the email. Try again later.',
+        'There was an error sending the email. Please try again later.',
         500
       )
     );
