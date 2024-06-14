@@ -46,20 +46,24 @@ const bookingSchema = new mongoose.Schema({
   observations: {
     type: String,
   },
-  cabinId: {
+  cabin: {
     type: mongoose.Schema.ObjectId,
     ref: 'Cabin',
     required: [true, 'Cabin is required'],
   },
-  guestId: {
+  user: {
     type: mongoose.Schema.ObjectId,
-    ref: 'Guest',
+    ref: 'User',
     required: [true, 'guest is required'],
   },
   createdAt: {
     type: Date,
     default: Date.now(),
   },
+});
+
+bookingSchema.pre('/^find/', function (next) {
+  this.populate('cabin').populate('user');
 });
 
 const Booking = mongoose.model('Booking', bookingSchema);
