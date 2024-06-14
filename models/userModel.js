@@ -96,11 +96,14 @@ userSchema.methods.createPasswordResetToken = function () {
 // to add password change date when user reset the password
 
 userSchema.pre('save', function (next) {
-  if (!this.isModified('password') || this.isNew()) {
+  // Only run this function if the password was actually modified or if the document is new
+  if (!this.isModified('password') || this.isNew) {
     return next();
   }
 
+  // Set passwordChangedAt to the current time minus 1 second
   this.passwordChangedAt = Date.now() - 1000;
+
   next();
 });
 
