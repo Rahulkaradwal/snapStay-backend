@@ -13,19 +13,19 @@ const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
 const stripe = require('stripe')(stripeSecretKey);
 
 // get all Bookings
-exports.getAllBookings = handler.getAll(Booking);
+// exports.getAllBookings = handler.getAll(Booking);
 
 // get a Booking
-exports.getBooking = handler.getOne(Booking);
+// exports.getBooking = handler.getOne(Booking);
 
 // create Booking
-exports.addBooking = handler.addOne(Booking);
+// exports.addBooking = handler.addOne(Booking);
 
 // Update Booking
-exports.updateBooking = handler.updateOne(Booking);
+// exports.updateBooking = handler.updateOne(Booking);
 
 // Delete Booking
-exports.deleteBooking = handler.deleteOne(Booking);
+// exports.deleteBooking = handler.deleteOne(Booking);
 
 exports.getCheckoutSession = catchAsync(async (req, res, next) => {
   try {
@@ -107,4 +107,18 @@ exports.webhookCheckout = catchAsync(async (req, res, next) => {
   }
 
   res.status(200).json({ received: true });
+});
+
+exports.getMyBookings = catchAsync(async (req, res, next) => {
+  // all the bookings
+  const bookings = await Booking.find({ user: req.user.id });
+
+  // find cabin with return ids
+  const cabinId = bookings.map((val) => val.cabin);
+  const cabins = await Cabin.find({ _id: { $in: cabinId } });
+
+  res.status(200).json({
+    status: 'success',
+    data: cabins,
+  });
 });

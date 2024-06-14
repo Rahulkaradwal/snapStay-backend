@@ -5,18 +5,7 @@ const express = require('express');
 const router = express.Router();
 
 router
-  .route('/')
-  .get(
-    authController.protect,
-    authController.restrictTo('admin'),
-    bookingController.getAllBookings
-  )
-  .post(bookingController.addBooking);
-
-router
-  .route('/:id')
-  .get(bookingController.getBooking)
-  .delete(bookingController.deleteBooking)
-  .patch(bookingController.updateBooking);
+  .route('/get-my-bookings')
+  .get(authController.protect, bookingController.getMyBookings);
 
 module.exports = router;
