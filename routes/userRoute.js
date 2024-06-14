@@ -17,6 +17,8 @@ router.route('/').get(userController.getAllUsers).post(userController.addUser);
 
 router.route('/:id').get(userController.getUser);
 
+router.get('/me', userController.getMe, userController.getUser);
+
 router
   .route('/updateMe')
   .patch(authController.protect, userController.updateMe);
