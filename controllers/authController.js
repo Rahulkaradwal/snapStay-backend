@@ -5,6 +5,7 @@ const SignToken = require('../utils/SignToken');
 const { promisify } = require('util');
 const jwt = require('jsonwebtoken');
 const sendMail = require('../utils/NodeMailer');
+const crypto = require('crypto');
 
 // user singup route
 exports.signup = catchAsync(async (req, res, next) => {
@@ -134,6 +135,7 @@ exports.restrictTo = (...roles) => {
   };
 };
 
+// route for forget password
 exports.forgetPassword = catchAsync(async (req, res, next) => {
   const { email } = req.body;
 
@@ -172,7 +174,6 @@ exports.forgetPassword = catchAsync(async (req, res, next) => {
         'If your email exists in our system, you will receive a reset token shortly.',
     });
   } catch (err) {
-    console.log(err);
     user.passwordResetToken = undefined;
     user.passwordResetExpires = undefined;
     await user.save({ validateBeforeSave: false });
@@ -184,4 +185,42 @@ exports.forgetPassword = catchAsync(async (req, res, next) => {
       )
     );
   }
+});
+
+exports.resetPassword = catchAsync(async (req, res, next) => {
+  if (!req.body.password && !req.body.confirmPassword) {
+    return next(new AppError('Sorry! Please enter passwords again!', 401));
+  }
+
+  const hashedToken = crypto
+    .createHash('sha256')
+    .update(req.params.token)
+    .digest('hex');
+
+  const user = await User.findOne({
+    passwordResetToken: hashedToken,
+    passwordResetExpires: { $gt: Date.now() },
+  });
+
+  if (!user) {
+    return next(
+      new AppError('Sorry! No user found OR the token is expired', 401)
+    );
+  }
+
+  user.password = req.body.password;
+  usre.confirmPassword = req.body.confirmPassword;
+  user.passwordResetToken = undefined;
+  user.passwordResetExpires = undefined;
+
+  await user.save();
+
+  const token = SignToken(user._id.toString());
+  res.status(200).json({
+    status: 'success',
+    token,
+    data: {
+      user,
+    },
+  });
 });

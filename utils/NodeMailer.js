@@ -14,7 +14,6 @@ const oAuth2Client = new google.auth.OAuth2(
 oAuth2Client.setCredentials({ refresh_token: OAUTH_REFRESH_TOKEN });
 
 const sendMail = catchAsync(async (options) => {
-  console.log('options', options);
   const accessToken = await oAuth2Client.getAccessToken();
   const transporter = nodemailer.createTransport({
     service: 'gmail',
@@ -34,7 +33,6 @@ const sendMail = catchAsync(async (options) => {
     text: options.message,
   };
 
-  console.log('mail options', mailOptions);
   await transporter.sendMail(mailOptions);
 });
 
