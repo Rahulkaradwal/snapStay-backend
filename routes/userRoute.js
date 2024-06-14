@@ -21,5 +21,12 @@ router
   .route('/updateMe')
   .patch(authController.protect, userController.updateMe);
 
+router.delete(
+  '/deleteUser/:id',
+  authController.protect,
+  authController.restrictTo('admin'),
+  userController.deleteUser
+);
+
 router.delete('/deleteMe', authController.protect, userController.deleteMe);
 module.exports = router;

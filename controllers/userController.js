@@ -19,6 +19,8 @@ exports.getAllUsers = Handler.getAll(User);
 
 exports.addUser = Handler.addOne(User);
 
+exports.deleteUser = Handler.deleteOne(User);
+
 exports.updateMe = catchAsync(async (req, res, next) => {
   if (req.body.password || req.body.confirmPassword) {
     return next(new AppError('Sorry! you can not update the password', 401));
