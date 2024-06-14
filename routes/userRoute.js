@@ -5,16 +5,20 @@ const authController = require('../controllers/authController');
 
 const router = express.Router();
 
+// authentication routes
 router.route('/forgetPassword').post(authController.forgetPassword);
 router.route('/resetPassword/:token').post(authController.resetPassword);
-
 router.route('/updatePassword').post(authController.updatePassword);
-
 router.route('/signup').post(authController.signup);
 router.route('/login').post(authController.login);
 
+// general routes
 router.route('/').get(userController.getAllUsers).post(userController.addUser);
 
 router.route('/:id').get(userController.getUser);
+
+router
+  .route('/updateMe')
+  .patch(authController.protect, userController.updateMe);
 
 module.exports = router;

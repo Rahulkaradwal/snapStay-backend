@@ -213,7 +213,12 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   user.passwordResetToken = undefined;
   user.passwordResetExpires = undefined;
 
-  await user.save();
+  try {
+    await user.save();
+    res.status(200).send('Password has been reset successfully');
+  } catch (error) {
+    return next(new AppError('Failed to reset password', 500));
+  }
 
   const token = SignToken(user._id.toString());
   res.status(200).json({
