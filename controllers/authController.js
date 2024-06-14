@@ -224,3 +224,38 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
     },
   });
 });
+
+// update current logged in user's password
+
+exports.updatePassword = catchAsync(async (req, res, next) => {
+  if (
+    !req.body.password &&
+    !req.body.oldPassword &&
+    !req.body.confirmPassword
+  ) {
+    next(new AppError('Please enter the password correctly', 401));
+  }
+
+  const user = await User.findById(req.params.id).select('+password');
+
+  if (!user) {
+    return next(new AppError('Something went wrong! User not found', 401));
+  }
+  if (!(await user.comparePassword(oldPassword, user.password))) {
+    return next(
+      new AppError('Unauthroized! Please enter your current password', 401)
+    );
+  }
+  user.password = req.body.password;
+  user.passwordConfirm = undefined;
+  await user.save();
+
+  const token = SignToken(user._id);
+  res.status(200).json({
+    status: 'success',
+    token,
+    data: {
+      user,
+    },
+  });
+});
