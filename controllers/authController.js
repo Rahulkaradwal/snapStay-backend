@@ -53,6 +53,7 @@ exports.login = catchAsync(async (req, res, next) => {
     email: user.email,
     nationality: user.nationality,
     nationalID: user.nationalID,
+    id: user._id,
   };
 
   const token = SignToken(user._id.toString());
