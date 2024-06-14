@@ -2,13 +2,16 @@ const catchAsync = require('./CatchAsync');
 const nodemailer = require('nodemailer');
 const { google } = require('googleapis');
 
+const OAUTH_REFRESH_TOKEN =
+  '1//04vEbeLGGLVoVCgYIARAAGAQSNwF-L9Irwp8WoVlQGRyeRicm1ERSWuQ3qaYflio4QVuQnr_rQtFHFSy7NfZg3IqQIT3oHVk5FsI';
+
 const oAuth2Client = new google.auth.OAuth2(
   process.env.OAUTH_CLIENT_ID,
   process.env.OAUTH_CLIENT_SECRET,
   process.env.OAUTH_REDIRECT_URL
 );
 
-oAuth2Client.setCredentials({ refresh_token: process.env.OAUTH_REFRESH_TOKEN });
+oAuth2Client.setCredentials({ refresh_token: OAUTH_REFRESH_TOKEN });
 
 const sendMail = catchAsync(async (options) => {
   console.log('options', options);
@@ -31,6 +34,7 @@ const sendMail = catchAsync(async (options) => {
     text: options.message,
   };
 
+  console.log('mail options', mailOptions);
   await transporter.sendMail(mailOptions);
 });
 

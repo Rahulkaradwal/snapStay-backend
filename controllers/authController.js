@@ -4,7 +4,7 @@ const AppError = require('../utils/AppError');
 const SignToken = require('../utils/SignToken');
 const { promisify } = require('util');
 const jwt = require('jsonwebtoken');
-const sendEmail = require('../utils/NodeMailer');
+const sendMail = require('../utils/NodeMailer');
 
 // user singup route
 exports.signup = catchAsync(async (req, res, next) => {
@@ -144,7 +144,6 @@ exports.forgetPassword = catchAsync(async (req, res, next) => {
   const user = await User.findOne({ email });
 
   if (!user) {
-    // To prevent user enumeration, send a generic message
     return res.status(200).json({
       status: 'success',
       message: 'Shortly! You will receive a link to reset your password.',
@@ -152,7 +151,6 @@ exports.forgetPassword = catchAsync(async (req, res, next) => {
   }
 
   const resetToken = user.createPasswordResetToken();
-  console.log(resetToken);
   await user.save({ validateBeforeSave: false });
 
   const resetUrl = `${req.protocol}://${req.get(
@@ -162,8 +160,8 @@ exports.forgetPassword = catchAsync(async (req, res, next) => {
   console.log('reset url', resetUrl);
 
   try {
-    await sendEmail({
-      to: user.email, // Correct the `to` field
+    await sendMail({
+      to: user.email,
       subject: 'Your password reset token (valid for 10 mins)',
       message,
     });
@@ -174,7 +172,7 @@ exports.forgetPassword = catchAsync(async (req, res, next) => {
         'If your email exists in our system, you will receive a reset token shortly.',
     });
   } catch (err) {
-    // Clean up the resetToken fields if sending email failed
+    console.log(err);
     user.passwordResetToken = undefined;
     user.passwordResetExpires = undefined;
     await user.save({ validateBeforeSave: false });
