@@ -49,6 +49,11 @@ const userSchema = new mongoose.Schema({
   passwordChangedAt: Date,
   passwordResetToken: String,
   passwordResetExpires: Date,
+  active: {
+    type: Boolean,
+    default: true,
+    select: false,
+  },
 });
 
 // hash the password when user signup
@@ -105,6 +110,11 @@ userSchema.pre('save', function (next) {
   // Set passwordChangedAt to the current time minus 1 second
   this.passwordChangedAt = Date.now() - 1000;
 
+  next();
+});
+
+userSchema.pre('/^find', function (next) {
+  this.find({ active: { $ne: false } });
   next();
 });
 
