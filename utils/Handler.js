@@ -23,7 +23,6 @@ exports.getAll = (Model) => {
     });
   });
 };
-
 // get a Model
 
 exports.getOne = (Model) => {

@@ -160,7 +160,6 @@ exports.forgetPassword = catchAsync(async (req, res, next) => {
     'host'
   )}/users/resetPassword/${resetToken}`;
   const message = `Forgot your password? Submit a request with your new password and passwordConfirm to: ${resetUrl}.\nIf you did not request this, please ignore this email.`;
-  console.log('reset url', resetUrl);
 
   try {
     await sendMail({

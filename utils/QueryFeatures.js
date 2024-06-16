@@ -1,7 +1,7 @@
 class QueryFeatures {
   constructor(query, queryString) {
-    this.query = query;
-    this.queryString = queryString;
+    this.query = query; // Ensure this is a Mongoose query object
+    this.queryString = queryString; // Ensure this is a plain object with query parameters
   }
 
   // Filter Query

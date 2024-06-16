@@ -27,7 +27,7 @@ const sendMail = catchAsync(async (options) => {
     },
   });
   const mailOptions = {
-    from: 'Rahul <rahulkaradwal.dev@gmail.com>',
+    from: 'SnapStay <rahulkaradwal.dev@gmail.com>',
     to: options.to,
     subject: options.subject,
     text: options.message,
