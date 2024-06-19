@@ -51,7 +51,7 @@ const bookingSchema = new mongoose.Schema({
     ref: 'Cabin',
     required: [true, 'Cabin is required'],
   },
-  user: {
+  guest: {
     type: mongoose.Schema.ObjectId,
     ref: 'User',
     required: [true, 'guest is required'],
@@ -62,8 +62,11 @@ const bookingSchema = new mongoose.Schema({
   },
 });
 
-bookingSchema.pre('/^find/', function (next) {
-  this.populate('cabin').populate('user');
+bookingSchema.pre(/^find/, function (next) {
+  this.populate({ path: 'cabin', select: 'name' }).populate({
+    path: 'guest',
+    select: 'fullName email',
+  });
   next();
 });
 

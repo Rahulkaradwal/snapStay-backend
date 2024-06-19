@@ -76,7 +76,7 @@ userSchema.methods.comparePassword = async function (
 
 userSchema.methods.changePasswordAfter = function (jwtTimeStamp) {
   if (this.passwordChangedAt) {
-    console.log('change pswd');
+    // console.log('change pswd');
     const changedTimeStamp = parseInt(
       this.passwordChangedAt.getTime() / 1000,
       10
@@ -120,7 +120,7 @@ userSchema.pre('save', function (next) {
 //   next();
 // });
 
-userSchema.pre('/^find/', function (next) {
+userSchema.pre(/^find/, function (next) {
   this.find({ active: { $ne: false } });
   next();
 });

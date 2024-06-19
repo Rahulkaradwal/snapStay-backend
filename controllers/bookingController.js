@@ -13,7 +13,7 @@ const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
 const stripe = require('stripe')(stripeSecretKey);
 
 // get all Bookings
-// exports.getAllBookings = handler.getAll(Booking);
+exports.getAllBookings = handler.getAll(Booking);
 
 // get a Booking
 // exports.getBooking = handler.getOne(Booking);
