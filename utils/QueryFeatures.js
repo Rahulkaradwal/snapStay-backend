@@ -16,7 +16,7 @@ class QueryFeatures {
     queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (val) => `$${val}`);
 
     let filter = JSON.parse(queryStr);
-    if (filter.status === 'all') {
+    if (filter.status === 'all' || '') {
       this.query = this.query.find();
     } else {
       this.query = this.query.find(filter);
