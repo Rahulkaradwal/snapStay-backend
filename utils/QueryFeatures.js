@@ -3,17 +3,24 @@ class QueryFeatures {
     this.query = query; // Ensure this is a Mongoose query object
     this.queryString = queryString; // Ensure this is a plain object with query parameters
   }
-
   // Filter Query
   filter() {
     const queryObj = { ...this.queryString };
+
     const excludedFields = ['page', 'sort', 'limit', 'fields'];
 
     excludedFields.forEach((el) => delete queryObj[el]);
 
     let queryStr = JSON.stringify(queryObj);
+
     queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (val) => `$${val}`);
-    this.query = this.query.find(JSON.parse(queryStr));
+
+    let filter = JSON.parse(queryStr);
+    if (filter.status === 'all') {
+      this.query = this.query.find();
+    } else {
+      this.query = this.query.find(filter);
+    }
 
     return this;
   }
@@ -21,8 +28,15 @@ class QueryFeatures {
   // Sort
   sort() {
     if (this.queryString.sort) {
-      const sortBy = this.queryString.sort.split(',').join(' ');
-      this.query = this.query.sort(sortBy);
+      // const sortBy = this.queryString.sort.split('-')
+
+      if (this.queryString.sort === 'startDate-desc') {
+        const sortBy = this.queryString.sort.split('-')[0];
+        this.query = this.query.sort(-sortBy);
+      } else if (this.queryString.sort === 'startDate-asc') {
+        const sortBy = this.queryString.sort.split('-')[0];
+        this.query = this.query.sort(sortBy);
+      }
     } else {
       this.query = this.query.sort('-createdAt');
     }

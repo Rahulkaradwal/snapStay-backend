@@ -32,7 +32,7 @@ const bookingSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['confirmed', 'unconfirmed'],
+    enum: ['confirmed', 'unconfirmed', 'checked-in', 'checked-out'],
     default: 'unconfirmed',
   },
   hasBreakfast: {

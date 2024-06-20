@@ -5,10 +5,10 @@ const QueryFeatures = require('./QueryFeatures');
 // get all Model
 exports.getAll = (Model) => {
   return catchAsync(async (req, res, next) => {
-    let filter = {};
-    if (req.params.id) filter = { _id: req.params.id }; // Use _id for MongoDB
+    let filterVal = {};
+    if (req.params.id) filterVal = { _id: req.params.id };
 
-    const features = new QueryFeatures(Model.find(filter), req.query)
+    const features = new QueryFeatures(Model.find(filterVal), req.query)
       .filter()
       .sort()
       .limit()
