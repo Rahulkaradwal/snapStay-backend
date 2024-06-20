@@ -16,9 +16,12 @@ exports.getAll = (Model) => {
 
     const data = await features.query;
 
+    // Perform a separate count query without pagination
+    const totalResult = await Model.countDocuments(filterVal);
+
     res.status(200).json({
       status: 'success',
-      totalResult: data.length,
+      totalResult,
       data,
     });
   });
