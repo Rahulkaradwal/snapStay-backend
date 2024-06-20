@@ -28,16 +28,16 @@ class QueryFeatures {
   // Sort
   sort() {
     if (this.queryString.sort) {
-      // const sortBy = this.queryString.sort.split('-')
+      const field = this.queryString.sort.split('-')[0];
+      const order = this.queryString.sort.split('-')[1];
 
-      if (this.queryString.sort === 'startDate-desc') {
-        const sortBy = this.queryString.sort.split('-')[0];
-        this.query = this.query.sort(-sortBy);
-      } else if (this.queryString.sort === 'startDate-asc') {
-        const sortBy = this.queryString.sort.split('-')[0];
-        this.query = this.query.sort(sortBy);
+      if (order === 'desc') {
+        this.query = this.query.sort(`-${field}`);
+      } else {
+        this.query = this.query.sort(field);
       }
     } else {
+      // Default sort by createdAt in descending order
       this.query = this.query.sort('-createdAt');
     }
     return this;
