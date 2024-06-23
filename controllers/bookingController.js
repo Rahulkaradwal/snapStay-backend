@@ -16,16 +16,46 @@ const stripe = require('stripe')(stripeSecretKey);
 exports.getAllBookings = handler.getAll(Booking);
 
 // get a Booking
-// exports.getBooking = handler.getOne(Booking);
+exports.getBooking = handler.getOne(Booking);
+
+// get latest Bookings
+exports.getLatestBooking = catchAsync(async (req, res, next) => {
+  const { lastDate, todayDate } = req.query;
+
+  try {
+    const startDate = new Date(lastDate);
+    const endDate = new Date(todayDate);
+
+    const data = await Booking.aggregate([
+      {
+        $match: {
+          $and: [
+            { createdAt: { $gte: startDate } },
+            { createdAt: { $lte: endDate } },
+          ],
+        },
+      },
+      {
+        $sort: { createdAt: -1 },
+      },
+    ]);
+
+    res.status(200).send({
+      data: data,
+    });
+  } catch (err) {
+    next(new AppError('Something Went Wrong at Get latest Booking', err));
+  }
+});
 
 // create Booking
 // exports.addBooking = handler.addOne(Booking);
 
 // Update Booking
-// exports.updateBooking = handler.updateOne(Booking);
+exports.updateBooking = handler.updateOne(Booking);
 
 // Delete Booking
-// exports.deleteBooking = handler.deleteOne(Booking);
+exports.deleteBooking = handler.deleteOne(Booking);
 
 exports.getCheckoutSession = catchAsync(async (req, res, next) => {
   try {

@@ -5,9 +5,16 @@ const express = require('express');
 const router = express.Router();
 
 router.route('/getAllBooking').get(bookingController.getAllBookings);
+router
+  .route('/getBooking/:id')
+  .get(bookingController.getBooking)
+  .patch(bookingController.updateBooking)
+  .delete(bookingController.deleteBooking);
 
 router
   .route('/get-my-bookings')
   .get(authController.protect, bookingController.getMyBookings);
+
+router.route('/getLatestBooking').get(bookingController.getLatestBooking);
 
 module.exports = router;

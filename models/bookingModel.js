@@ -65,7 +65,7 @@ const bookingSchema = new mongoose.Schema({
 bookingSchema.pre(/^find/, function (next) {
   this.populate({ path: 'cabin', select: 'name' }).populate({
     path: 'guest',
-    select: 'fullName email',
+    select: 'fullName email nationalID nationality',
   });
   next();
 });

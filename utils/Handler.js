@@ -9,15 +9,17 @@ exports.getAll = (Model) => {
     if (req.params.id) filterVal = { _id: req.params.id };
 
     const features = new QueryFeatures(Model.find(filterVal), req.query)
-      .filter()
-      .sort()
       .limit()
-      .page();
+      .page()
+      .filter()
+      .sort();
 
     const data = await features.query;
+    // console.log('in the handler', data);
 
     // Perform a separate count query without pagination
     const totalResult = await Model.countDocuments(filterVal);
+    // console.log('totalResult', totalResult);
 
     res.status(200).json({
       status: 'success',
