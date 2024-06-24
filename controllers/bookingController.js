@@ -48,6 +48,32 @@ exports.getLatestBooking = catchAsync(async (req, res, next) => {
   }
 });
 
+exports.getTodaysBooking = catchAsync(async (req, res, next) => {
+  const { today } = req.query;
+
+  try {
+    const todayDate = new Date(today); // Assuming todayDate is initialized correctly elsewhere
+
+    const data = await Booking.find({
+      $or: [
+        {
+          $and: [{ status: 'unconfirmed' }, { createdAt: { $gte: todayDate } }],
+        },
+        {
+          $and: [{ status: 'checked-in' }, { endDate: { $lte: todayDate } }],
+        },
+      ],
+    });
+
+    res.status(201).send({ status: 'success', data });
+  } catch (err) {
+    console.error('Error fetching bookings:', err);
+    next(new AppError('Could not load todays Booking', 401));
+  }
+});
+
+// });
+
 // create Booking
 // exports.addBooking = handler.addOne(Booking);
 

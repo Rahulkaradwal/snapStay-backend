@@ -15,6 +15,8 @@ router
   .route('/get-my-bookings')
   .get(authController.protect, bookingController.getMyBookings);
 
+router.route('/getTodaysBooking').get(bookingController.getTodaysBooking);
+
 router.route('/getLatestBooking').get(bookingController.getLatestBooking);
 
 module.exports = router;
