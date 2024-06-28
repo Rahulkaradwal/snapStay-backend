@@ -51,11 +51,13 @@ const CabinRouter = require('./routes/cabinRoute');
 const BookingRouter = require('./routes/bookingRoute');
 const GuestRouter = require('./routes/guestRoute');
 const UserRouter = require('./routes/userRoute');
+const SettingsRouter = require('./routes/settingsRoute');
 
 app.use('/cabins', CabinRouter);
 app.use('/bookings', BookingRouter);
 app.use('/guests', GuestRouter);
 app.use('/users', UserRouter);
+app.use('/settings', SettingsRouter);
 
 // Handling unmatched routes
 app.all('*', (req, res, next) => {

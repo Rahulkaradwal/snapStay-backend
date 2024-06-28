@@ -1,23 +1,27 @@
 const mongoose = require('mongoose');
-const settingsSchema = new mongoose.Schema({
+
+const settingSchema = new mongoose.Schema({
   minBookingLength: {
     type: Number,
-    required: [true, 'Mininum Booking length is required'],
+    required: [true, 'Min Booking Length is required'],
   },
   maxBookingLength: {
     type: Number,
-    required: [true, 'Maximum Booking length is required'],
+    required: [true, 'Max Booking Length is required'],
   },
-  maxGuestsPerBooking: {
+  maxGuestPerBooking: {
     type: Number,
-    required: [true, 'Max guest per booking is required'],
+    required: [true, 'Max Guest Per Booking Detail is required'],
   },
   breakfastPrice: {
     type: Number,
-    required: [true, 'Breakfast Price is Required'],
+    required: [true, 'Breakfast Price is required'],
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now(),
   },
 });
 
-const Settings = mongoose.model('Settings', settingsSchema);
-
-module.exports = Settings;
+const Setting = mongoose.model('Setting', settingSchema);
+module.exports = Setting;
