@@ -11,11 +11,16 @@ router.route('/resetPassword/:token').post(authController.resetPassword);
 router.route('/updatePassword').post(authController.updatePassword);
 router.route('/signup').post(authController.signup);
 router.route('/login').post(authController.login);
+router
+  .route('/currentUser')
+  .get(authController.protect, userController.getCurrentUser);
 
 // general routes
 router.route('/').get(userController.getAllUsers).post(userController.addUser);
 
 router.route('/:id').get(userController.getUser);
+
+router.route('/name/:name').get(userController.getUsersByName);
 
 router.get('/me', userController.getMe, userController.getUser);
 

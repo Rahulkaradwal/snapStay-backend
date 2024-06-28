@@ -59,3 +59,31 @@ exports.getMe = (req, res, next) => {
   req.params.id = req.user.id;
   next();
 };
+
+exports.getCurrentUser = catchAsync(async (req, res, next) => {
+  const currentUser = req.user;
+  if (!currentUser) {
+    next(new AppError('No user Exists'));
+  }
+
+  res.status(200).json({
+    status: 'success',
+    user: currentUser,
+  });
+});
+
+exports.getUsersByName = catchAsync(async (req, res, next) => {
+  const name = req.params.name;
+  try {
+    const users = await User.find({
+      fullName: { $regex: name, $options: 'i' },
+    });
+
+    res.status(200).json({
+      status: 'success',
+      data: users,
+    });
+  } catch (err) {
+    next(new AppError('Could not find the user'));
+  }
+});

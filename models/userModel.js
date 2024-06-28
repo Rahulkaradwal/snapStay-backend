@@ -33,7 +33,6 @@ const userSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now(),
-    select: false,
   },
   password: {
     type: String,
@@ -52,7 +51,6 @@ const userSchema = new mongoose.Schema({
   active: {
     type: Boolean,
     default: true,
-    select: false,
   },
 });
 

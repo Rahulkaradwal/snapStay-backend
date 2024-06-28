@@ -4,7 +4,6 @@ const bookingSchema = new mongoose.Schema({
   startDate: {
     type: Date,
     default: Date.now(),
-    required: [true, 'Date is Required'],
   },
   endDate: {
     type: Date,
