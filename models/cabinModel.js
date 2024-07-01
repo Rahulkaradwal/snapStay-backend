@@ -26,6 +26,16 @@ const cabinSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  bookingSettings: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'Setting',
+    required: [true, 'Booking Settings are requried'],
+  },
+});
+
+cabinSchema.pre(/^find/, function (next) {
+  this.populate({ path: 'bookingSettings' });
+  next();
 });
 
 const Cabin = mongoose.model('Cabin', cabinSchema);

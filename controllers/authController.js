@@ -175,6 +175,7 @@ exports.forgetPassword = catchAsync(async (req, res, next) => {
         'If your email exists in our system, you will receive a reset token shortly.',
     });
   } catch (err) {
+    console.log('nodemailer error', err);
     user.passwordResetToken = undefined;
     user.passwordResetExpires = undefined;
     await user.save({ validateBeforeSave: false });
