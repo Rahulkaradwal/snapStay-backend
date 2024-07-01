@@ -18,7 +18,10 @@ router
 // general routes
 router.route('/').get(userController.getAllUsers).post(userController.addUser);
 
-router.route('/:id').get(userController.getUser);
+router
+  .route('/updateUser/:id')
+  .get(userController.getUser)
+  .patch(userController.updateUser);
 
 router.route('/name/:name').get(userController.getUsersByName);
 
@@ -30,8 +33,8 @@ router
 
 router.delete(
   '/deleteUser/:id',
-  authController.protect,
-  authController.restrictTo('admin'),
+  // authController.protect,
+  // authController.restrictTo('admin'),
   userController.deleteUser
 );
 

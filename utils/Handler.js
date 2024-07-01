@@ -85,7 +85,7 @@ exports.updateOne = (Model) => {
         data: data,
       });
     } catch (err) {
-      next(new AppError('Server Error, Could not update the cabin ', 400));
+      next(new AppError('Server Error, Could not update the data ', 400));
     }
   });
 };

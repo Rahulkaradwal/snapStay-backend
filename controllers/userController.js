@@ -15,6 +15,8 @@ const filterField = (value, ...allowedFileds) => {
 
 exports.getUser = Handler.getOne(User);
 
+exports.updateUser = Handler.updateOne(User);
+
 exports.getAllUsers = Handler.getAll(User);
 
 exports.addUser = Handler.addOne(User);
