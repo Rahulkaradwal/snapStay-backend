@@ -5,11 +5,14 @@ const authController = require('../controllers/authController');
 
 const router = express.Router();
 
-router.route('/').get(cabinController.getAllCabins).post(
-  // cabinController.uploadCabinPhoto,
-  // cabinController.uploadPhotoToS3,
-  cabinController.addCabin
-);
+router
+  .route('/')
+  .get(cabinController.getAllCabins)
+  .post(
+    cabinController.uploadCabinPhoto,
+    cabinController.uploadPhotoToS3,
+    cabinController.addCabin
+  );
 
 router
   .route('/:id')
