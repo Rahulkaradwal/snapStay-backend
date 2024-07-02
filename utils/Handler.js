@@ -15,11 +15,9 @@ exports.getAll = (Model) => {
       .sort();
 
     const data = await features.query;
-    // console.log('in the handler', data);
 
     // Perform a separate count query without pagination
     const totalResult = await Model.countDocuments(filterVal);
-    // console.log('totalResult', totalResult);
 
     res.status(200).json({
       status: 'success',
@@ -63,7 +61,6 @@ exports.addOne = (Model) => {
         data: data,
       });
     } catch (err) {
-      console.log(err);
       next(new AppError('Could not Add data', 400));
     }
   });
@@ -73,7 +70,6 @@ exports.addOne = (Model) => {
 
 exports.updateOne = (Model) => {
   return catchAsync(async (req, res, next) => {
-    console.log(req.params.id, req.body);
     try {
       const data = await Model.findByIdAndUpdate(req.params.id, req.body, {
         new: true,

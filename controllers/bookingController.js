@@ -140,7 +140,6 @@ exports.createBookingCheckout = async (session) => {
 
     await Booking.create({ cabin, user, price });
   } catch (err) {
-    console.log('error creating Booking', err);
     return next(new AppError('Sorry! Error in Booking, please try again', 500));
   }
 };
