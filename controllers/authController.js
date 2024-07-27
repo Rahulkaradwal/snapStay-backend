@@ -6,6 +6,7 @@ const { promisify } = require('util');
 const jwt = require('jsonwebtoken');
 const sendMail = require('../utils/NodeMailer');
 const crypto = require('crypto');
+const Guest = require('../models/guestModel');
 
 // user singup route
 exports.signup = catchAsync(async (req, res, next) => {
@@ -33,6 +34,96 @@ exports.signup = catchAsync(async (req, res, next) => {
     data: user,
   });
 });
+
+// guest signup route
+
+exports.guestSingup = catchAsync(async (req, res, next) => {
+  const guestData = {
+    firstName: req.body.firstName,
+    lastName: req.body.lastName,
+    email: req.body.email,
+    nationality: req.body.nationality,
+    phoneNumber: req.body.phoneNumber,
+    password: req.body.password,
+    confirmPassword: req.body.confirmPassword,
+  };
+  const newGuest = await User.create(guestData);
+  const guest = {
+    firstName: newGuest.firstName,
+    lastName: newGuest.lastName,
+    email: newGuest.email,
+    nationality: newGuest.nationality,
+    phoneNumber: newGuest.phoneNumber,
+  };
+
+  const token = SignToken(newGuest._id.toString());
+
+  res.status(200).json({
+    status: 'success',
+    token,
+    data: guest,
+  });
+});
+
+// // Function to extract user/guest data from the request
+// const extractUserData = (req, isGuest = false) => {
+//   const commonData = {
+//     email: req.body.email,
+//     nationality: req.body.nationality,
+//     password: req.body.password,
+//     confirmPassword: req.body.confirmPassword,
+//   };
+
+//   return isGuest
+//     ? {
+//         ...commonData,
+//         firstName: req.body.firstName,
+//         lastName: req.body.lastName,
+//       }
+//     : {
+//         ...commonData,
+//         fullName: req.body.fullName,
+//         nationalID: req.body.nationalID,
+//       };
+// };
+
+// // Function to generate a response with a token
+// const sendResponseWithToken = (user, res) => {
+//   const token = SignToken(user._id.toString());
+//   const userData = user.fullName
+//     ? {
+//         fullName: user.fullName,
+//         email: user.email,
+//         nationality: user.nationality,
+//         nationalID: user.nationalID,
+//       }
+//     : {
+//         firstName: user.firstName,
+//         lastName: user.lastName,
+//         email: user.email,
+//         nationality: user.nationality,
+//       };
+
+//   res.status(200).json({
+//     status: 'success',
+//     token,
+//     data: userData,
+//   });
+// };
+
+// // User signup route
+// exports.signup = catchAsync(async (req, res, next) => {
+//   const userData = extractUserData(req);
+//   const newUser = await User.create(userData);
+//   sendResponseWithToken(newUser, res);
+// });
+
+// // Guest signup route
+// exports.register = catchAsync(async (req, res, next) => {
+//   const guestData = extractUserData(req, true);
+//   const newGuest = await Guest.create(guestData);
+//   sendResponseWithToken(newGuest, res);
+// });
 
 // user login route
 exports.login = catchAsync(async (req, res, next) => {
@@ -62,6 +153,39 @@ exports.login = catchAsync(async (req, res, next) => {
     status: 'success',
     token,
     data: userData,
+  });
+});
+
+// guest login route
+
+exports.guestLogin = catchAsync(async (req, res, next) => {
+  const { email, password } = req.body;
+  if (!email && !password) {
+    return next(new AppError('Please provide email and passowrd', 401));
+  }
+  const user = await Guest.findOne({ email }).select('+password');
+  if (!user) {
+    return next(new AppError('User not found', 404));
+  }
+
+  if (!user && !(await user.comparePassword(password, user.password))) {
+    return next(new AppError('Incorrect Password', 401));
+  }
+  const guestData = {
+    firstName: user.firstName,
+    lastName: user.lastName,
+    email: user.email,
+    nationality: user.nationality,
+    phoneNumber: user.phoneNumber,
+    id: user._id,
+  };
+
+  const token = SignToken(user._id.toString());
+
+  res.status(201).json({
+    status: 'success',
+    token,
+    data: guestData,
   });
 });
 
@@ -117,6 +241,61 @@ exports.protect = catchAsync(async (req, res, next) => {
 
   // Attach the user to the request object
   req.user = freshUser;
+
+  next();
+});
+
+// protect route for guest
+exports.guestProtect = catchAsync(async (req, res, next) => {
+  let token;
+
+  // Check if the authorization header is present and starts with 'Bearer'
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith('Bearer')
+  ) {
+    token = req.headers.authorization.split(' ')[1];
+  }
+
+  // If no token is found, return an authorization error
+  if (!token) {
+    return next(
+      new AppError(
+        'Sorry, you are not authorized to access this resource.',
+        401
+      )
+    );
+  }
+
+  // Verify the token
+  let decoded;
+  try {
+    decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+
+    if (!decoded) {
+      throw new Error('Invalid token');
+    }
+  } catch (err) {
+    return next(
+      new AppError('Invalid or expired token, please log in again.', 401)
+    );
+  }
+
+  // Check if the guest still exists
+  const freshGuest = await Guest.findById(decoded.id).select('+role');
+
+  if (!freshGuest) {
+    return next(new AppError('User not found, please log in again.', 401));
+  }
+
+  if (freshGuest.changePasswordAfter(decoded.iat)) {
+    return next(
+      new AppError('User recently changed password, please login again', 401)
+    );
+  }
+
+  // Attach the user to the request object
+  req.user = freshGuest;
 
   next();
 });
