@@ -1,5 +1,7 @@
+const bcrypt = require('bcrypt');
 const mongoose = require('mongoose');
 const validator = require('validator');
+const crypto = require('crypto');
 
 const guestSchema = new mongoose.Schema({
   firstName: {
@@ -56,7 +58,7 @@ guestSchema.pre('save', async function (next) {
 });
 
 // compare password
-guestSchema.methods.comparePassword = async function (
+guestSchema.methods.compareGuestPassword = async function (
   candidatePassword,
   userPassword
 ) {

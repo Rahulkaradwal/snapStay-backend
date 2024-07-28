@@ -38,6 +38,7 @@ exports.signup = catchAsync(async (req, res, next) => {
 // guest signup route
 
 exports.guestSingup = catchAsync(async (req, res, next) => {
+  console.log('in the guest singup', req.body);
   const guestData = {
     firstName: req.body.firstName,
     lastName: req.body.lastName,
@@ -47,7 +48,7 @@ exports.guestSingup = catchAsync(async (req, res, next) => {
     password: req.body.password,
     confirmPassword: req.body.confirmPassword,
   };
-  const newGuest = await User.create(guestData);
+  const newGuest = await Guest.create(guestData);
   const guest = {
     firstName: newGuest.firstName,
     lastName: newGuest.lastName,
@@ -136,7 +137,7 @@ exports.login = catchAsync(async (req, res, next) => {
     return next(new AppError('User not found', 404));
   }
 
-  if (!user && !(await user.comparePassword(password, user.password))) {
+  if (!(await user.comparePassword(password, user.password))) {
     return next(new AppError('Incorrect Password', 401));
   }
   const userData = {
@@ -160,29 +161,31 @@ exports.login = catchAsync(async (req, res, next) => {
 
 exports.guestLogin = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;
-  if (!email && !password) {
-    return next(new AppError('Please provide email and passowrd', 401));
-  }
-  const user = await Guest.findOne({ email }).select('+password');
-  if (!user) {
-    return next(new AppError('User not found', 404));
+  if (!email || !password) {
+    return next(new AppError('Please provide email and password', 401));
   }
 
-  if (!user && !(await user.comparePassword(password, user.password))) {
+  const guest = await Guest.findOne({ email }).select('+password');
+  if (!guest) {
+    return next(new AppError('Guest not found', 404));
+  }
+
+  if (!(await guest.compareGuestPassword(password, guest.password))) {
     return next(new AppError('Incorrect Password', 401));
   }
+
   const guestData = {
-    firstName: user.firstName,
-    lastName: user.lastName,
-    email: user.email,
-    nationality: user.nationality,
-    phoneNumber: user.phoneNumber,
-    id: user._id,
+    firstName: guest.firstName,
+    lastName: guest.lastName,
+    email: guest.email,
+    nationality: guest.nationality,
+    phoneNumber: guest.phoneNumber,
+    id: guest._id,
   };
 
-  const token = SignToken(user._id.toString());
+  const token = SignToken(guest._id.toString());
 
-  res.status(201).json({
+  res.status(200).json({
     status: 'success',
     token,
     data: guestData,
