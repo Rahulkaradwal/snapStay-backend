@@ -55,6 +55,7 @@ exports.guestSingup = catchAsync(async (req, res, next) => {
     email: newGuest.email,
     nationality: newGuest.nationality,
     phoneNumber: newGuest.phoneNumber,
+    id: newGuest._id,
   };
 
   const token = SignToken(newGuest._id.toString());

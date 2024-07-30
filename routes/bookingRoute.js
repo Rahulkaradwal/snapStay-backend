@@ -11,6 +11,12 @@ router
   .patch(bookingController.updateBooking)
   .delete(bookingController.deleteBooking);
 
+router.get(
+  '/checkout-session/:cabinId',
+  // authController.protect,
+  bookingController.getCheckoutSession
+);
+
 router
   .route('/get-my-bookings')
   .get(authController.protect, bookingController.getMyBookings);
