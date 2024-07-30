@@ -4,6 +4,7 @@ const catchAsync = require('../utils/CatchAsync');
 const AppError = require('../utils/AppError');
 const Cabin = require('../models/cabinModel');
 const User = require('../models/userModel');
+const Guest = require('../models/guestModel');
 
 // stripe config
 const frontEndURL = 'http://localhost:5173/';
@@ -85,8 +86,12 @@ exports.updateBooking = handler.updateOne(Booking);
 exports.deleteBooking = handler.deleteOne(Booking);
 
 exports.getCheckoutSession = catchAsync(async (req, res, next) => {
+  console.log('in the booking get checkout session');
+
+  console.log(req.params.cabinId);
   try {
     const cabin = await Cabin.findById(req.params.cabinId);
+    console.log(cabin);
     if (!cabin) {
       return next(
         new AppError('Sorry Could not find the Cabin, please try again', 404)
@@ -97,18 +102,16 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
       payment_method_types: ['card'],
       success_url: `${frontEndURL}`,
       cancel_url: `${req.protocol}://${req.get('host')}/cancel`,
-      customer: req.user.email,
-      client_refrence_id: req.params.cabinId,
+      customer_email: 'sateg49239@fuzitea.com',
+      client_reference_id: req.params.cabinId,
       line_items: [
         {
           price_data: {
             currency: 'usd',
             product_data: {
               name: `${cabin.name} Cabin`,
-              price: `${cabin.regularPrice} $`,
-              discount: `${cabin.discount} $`,
               description: `${cabin.description}`,
-              // imgages: ['url]
+              images: [cabin.image],
             },
             unit_amount: cabin.regularPrice * 100,
           },
@@ -136,10 +139,10 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
 exports.createBookingCheckout = async (session) => {
   try {
     const cabin = session.client_refrence_id;
-    const user = (await User.findOne({ email: session.customer_email })).id;
+    const guest = (await Guest.findOne({ email: session.customer_email })).id;
     const price = session.unit_amount / 100;
 
-    await Booking.create({ cabin, user, price });
+    await Booking.create({ cabin, guest, price });
   } catch (err) {
     return next(new AppError('Sorry! Error in Booking, please try again', 500));
   }
