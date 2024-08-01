@@ -13,7 +13,7 @@ router
 
 router.get(
   '/checkout-session/:cabinId',
-  // authController.protect,
+  authController.guestProtect,
   bookingController.getCheckoutSession
 );
 

@@ -7,6 +7,7 @@ const cors = require('cors');
 const AppError = require('./utils/AppError');
 const path = require('path');
 const bodyParser = require('body-parser');
+const bookingController = require('./controllers/bookingController');
 
 const app = express();
 // Trust the proxy to get the correct client IP
@@ -52,6 +53,14 @@ const BookingRouter = require('./routes/bookingRoute');
 const GuestRouter = require('./routes/guestRoute');
 const UserRouter = require('./routes/userRoute');
 const SettingsRouter = require('./routes/settingsRoute');
+
+// webhook url
+
+app.post(
+  '/webhook-checkout',
+  bodyParser.raw({ type: 'application/json' }),
+  bookingController.webhookCheckout
+);
 
 app.use('/cabins', CabinRouter);
 app.use('/bookings', BookingRouter);
