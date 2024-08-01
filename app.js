@@ -29,6 +29,14 @@ app.use(cors(corsOptions));
 
 app.options('*', cors(corsOptions)); // Enable pre-flight across-the-board
 
+// webhook url
+
+app.post(
+  '/webhook-checkout',
+  bodyParser.raw({ type: 'application/json' }),
+  bookingController.webhookCheckout
+);
+
 app.use(helmet());
 app.use(express.json({ limit: '10kb' }));
 app.use(mongoSanitize());
@@ -53,14 +61,6 @@ const BookingRouter = require('./routes/bookingRoute');
 const GuestRouter = require('./routes/guestRoute');
 const UserRouter = require('./routes/userRoute');
 const SettingsRouter = require('./routes/settingsRoute');
-
-// webhook url
-
-app.post(
-  '/webhook-checkout',
-  bodyParser.raw({ type: 'application/json' }),
-  bookingController.webhookCheckout
-);
 
 app.use('/cabins', CabinRouter);
 app.use('/bookings', BookingRouter);
