@@ -8,7 +8,7 @@ const Guest = require('../models/guestModel');
 
 // stripe config
 const frontEndURL = 'http://localhost:5173/';
-const STRIPE_WEBHOOK_SECRET = 'url';
+const STRIPE_WEBHOOK_SECRET = 'whsec_htrwehhghTLCgvH5prHvZyc0d1Iu4kfD';
 // const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
 const stripeSecretKey =
   'sk_test_51PKq1n02bTSpcbhuRA2ibFPkwKhQgFkl3Qcd7MZn0TQfSADlJz6XSYcy9TYet7xnWxVha7kYQni83B75R6K5zUVc00D24qjtkB';
@@ -149,7 +149,7 @@ exports.webhookCheckout = catchAsync(async (req, res, next) => {
     event = stripe.webhooks.constructEvent(
       req.body,
       signature,
-      process.env.STRIPE_WEBHOOK_SECRET
+      STRIPE_WEBHOOK_SECRET
     );
   } catch (err) {
     console.error('Webhook error:', err);
