@@ -126,12 +126,17 @@ exports.createBookingCheckout = catchAsync(async (session, next) => {
   console.log('create booking checkout --------');
   try {
     const cabinId = session.client_reference_id;
+    console.log('-----create booking checkout cabinId', cabinId);
+
     const guest = await Guest.findOne({ email: session.customer_email });
+
+    console.log('guest ---', guest);
     if (!guest) {
+      console.log('Guest not found');
       throw new AppError('Guest not found', 404);
     }
     const guestId = guest._id;
-    const price = session.amount_total / 100; // Ensure amount_total is in cents
+    const price = session.amount_total / 100;
 
     console.log('details', cabinId, guestId, price);
     await Booking.create({ cabin: cabinId, guest: guestId, price });
@@ -142,7 +147,6 @@ exports.createBookingCheckout = catchAsync(async (session, next) => {
 });
 
 exports.webhookCheckout = catchAsync(async (req, res, next) => {
-  console.log('webhook ---------------', req.body);
   const signature = req.headers['stripe-signature'];
   let event;
   try {
@@ -157,97 +161,11 @@ exports.webhookCheckout = catchAsync(async (req, res, next) => {
   }
 
   if (event.type === 'checkout.session.completed') {
-    console.log('checkout session completed');
     await exports.createBookingCheckout(event.data.object, next);
   }
 
   res.status(200).json({ received: true });
 });
-
-// exports.getCheckoutSession = catchAsync(async (req, res, next) => {
-//   try {
-//     const cabin = await Cabin.findById(req.params.cabinId);
-//     if (!cabin) {
-//       return next(
-//         new AppError('Sorry Could not find the Cabin, please try again', 404)
-//       );
-//     }
-
-//     const session = await stripe.checkout.sessions.create({
-//       payment_method_types: ['card'],
-//       success_url: `${frontEndURL}`,
-//       cancel_url: `${req.protocol}://${req.get('host')}/cancel`,
-//       customer_email: req.user.email,
-//       client_reference_id: req.params.cabinId,
-//       line_items: [
-//         {
-//           price_data: {
-//             currency: 'usd',
-//             product_data: {
-//               name: `${cabin.name} Cabin`,
-//               description: `${cabin.description}`,
-//               images: [cabin.image],
-//             },
-//             unit_amount: cabin.regularPrice * 100,
-//           },
-//           quantity: 1,
-//         },
-//       ],
-//       mode: 'payment',
-//     });
-
-//     console.log('session --------', session);
-
-//     res.status(200).json({
-//       status: 'success',
-//       session,
-//     });
-//   } catch (err) {
-//     console.log('Error creating Checkout session', err);
-//     return next(
-//       new AppError(
-//         'Sorry! Something went wrong while checkout, please try again later',
-//         500
-//       )
-//     );
-//   }
-// });
-
-// exports.createBookingCheckout = async (session) => {
-//   try {
-//     const cabin = session.client_refrence_id;
-//     const guest = (await Guest.findOne({ email: session.customer_email })).id;
-//     const price = session.unit_amount / 100;
-
-//     console.log('details', cabin, guest, price);
-
-//     await Booking.create({ cabin, guest, price });
-//   } catch (err) {
-//     console.log('Error in creating booking', err);
-//     return next(new AppError('Sorry! Error in Booking, please try again', 500));
-//   }
-// };
-
-// exports.webhookCheckout = catchAsync(async (req, res, next) => {
-//   console.log('webhook', req.body);
-//   const signature = req.headers['stripe-signature'];
-//   let event;
-//   try {
-//     event = stripe.webhooks.constructEvent(
-//       req.body,
-//       signature,
-//       STRIPE_WEBHOOK_SECRET
-//     );
-//   } catch (err) {
-//     console.error('Webhook error:', err);
-//     return res.status(400).send(`Webhook error: ${err.message}`);
-//   }
-//   if (event.type === 'checkout.session.completed') {
-//     await exports.createBookingCheckout(event.data.object);
-//   }
-
-//   res.status(200).json({ received: true });
-// });
 
 exports.getMyBookings = catchAsync(async (req, res, next) => {
   // all the bookings
