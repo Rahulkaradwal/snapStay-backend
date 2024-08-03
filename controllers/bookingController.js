@@ -76,8 +76,8 @@ exports.getTodaysBooking = catchAsync(async (req, res, next) => {
 
 // });
 
-// create Booking
-// exports.addBooking = handler.addOne(Booking);
+// create Booking without Stripe and user can pay later at desk
+exports.createBooking = handler.addBooking(Booking);
 
 // Update Booking
 exports.updateBooking = handler.updateOne(Booking);
@@ -123,22 +123,25 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
 });
 
 exports.createBookingCheckout = catchAsync(async (session, next) => {
-  console.log('create booking checkout --------');
   try {
     const cabinId = session.client_reference_id;
-    console.log('-----create booking checkout cabinId', cabinId);
 
     const guest = await Guest.findOne({ email: session.customer_email });
 
-    console.log('guest ---', guest);
     if (!guest) {
-      console.log('Guest not found');
       throw new AppError('Guest not found', 404);
     }
     const guestId = guest._id;
     const price = session.amount_total / 100;
 
-    console.log('details', cabinId, guestId, price);
+    /*
+settings: minBookingLength, maxBookingLength, maxGuestPerBooking, breakfastPrice
+
+
+    starDate, endDAte, numNights, numGuests, cabinPrice,
+    extraPrice, totalPrice, status, hasBreakfast, isPaid, Observations, cabin, guest, createAt
+    */
+
     await Booking.create({ cabin: cabinId, guest: guestId, price });
   } catch (err) {
     console.log('Error in creating booking', err);

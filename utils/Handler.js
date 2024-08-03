@@ -66,10 +66,26 @@ exports.addOne = (Model) => {
   });
 };
 
+// create booking without payment
+exports.addBooking = (Model) => {
+  return catchAsync(async (req, res, next) => {
+    try {
+      const data = await Model.create(req.body);
+      res.status(200).json({
+        status: 'success',
+        data: data,
+      });
+    } catch (err) {
+      next(new AppError('Could not add Booking', 400));
+    }
+  });
+};
+
 // Update Model
 
 exports.updateOne = (Model) => {
   return catchAsync(async (req, res, next) => {
+    console.log(req.body);
     try {
       const data = await Model.findByIdAndUpdate(req.params.id, req.body, {
         new: true,

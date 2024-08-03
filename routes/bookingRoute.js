@@ -18,6 +18,10 @@ router.get(
 );
 
 router
+  .route('/create-booking')
+  .post(authController.guestProtect, bookingController.createBooking);
+
+router
   .route('/get-my-bookings')
   .get(authController.protect, bookingController.getMyBookings);
 

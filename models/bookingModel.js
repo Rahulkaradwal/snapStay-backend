@@ -36,7 +36,7 @@ const bookingSchema = new mongoose.Schema({
   },
   hasBreakfast: {
     type: Boolean,
-    required: [true, 'Breakfast is required'],
+    default: false,
   },
   isPaid: {
     type: Boolean,
@@ -52,7 +52,7 @@ const bookingSchema = new mongoose.Schema({
   },
   guest: {
     type: mongoose.Schema.ObjectId,
-    ref: 'User',
+    ref: 'Guest',
     required: [true, 'guest is required'],
   },
   createdAt: {
@@ -64,7 +64,7 @@ const bookingSchema = new mongoose.Schema({
 bookingSchema.pre(/^find/, function (next) {
   this.populate({ path: 'cabin', select: 'name' }).populate({
     path: 'guest',
-    select: 'fullName email nationalID nationality',
+    select: 'firstName lastName  email phoneNumber',
   });
   next();
 });
