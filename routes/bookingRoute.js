@@ -9,7 +9,7 @@ router
   .route('/getBooking/:id')
   .get(bookingController.getBooking)
   .patch(bookingController.updateBooking)
-  .delete(bookingController.deleteBooking);
+  .delete(authController.guestProtect, bookingController.deleteBooking);
 
 router.get(
   '/checkout-session/:cabinId',

@@ -174,13 +174,18 @@ exports.getMyBookings = catchAsync(async (req, res, next) => {
   // all the bookings
 
   const bookings = await Booking.find({ guest: req.user.id });
+  // console.log(bookings);
 
-  // find cabin with return ids
-  const cabinId = bookings.map((val) => val.cabin);
-  const cabins = await Cabin.find({ _id: { $in: cabinId } });
+  if (!bookings) {
+    return next(new AppError('No bookings found', 404));
+  }
+
+  // // find cabin with return ids
+  // const cabinId = bookings.map((val) => val.cabin);
+  // const cabins = await Cabin.find({ _id: { $in: cabinId } });
 
   res.status(200).json({
     status: 'success',
-    data: cabins,
+    data: bookings,
   });
 });
