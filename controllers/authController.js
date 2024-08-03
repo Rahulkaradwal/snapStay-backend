@@ -67,66 +67,6 @@ exports.guestSingup = catchAsync(async (req, res, next) => {
   });
 });
 
-// // Function to extract user/guest data from the request
-// const extractUserData = (req, isGuest = false) => {
-//   const commonData = {
-//     email: req.body.email,
-//     nationality: req.body.nationality,
-//     password: req.body.password,
-//     confirmPassword: req.body.confirmPassword,
-//   };
-
-//   return isGuest
-//     ? {
-//         ...commonData,
-//         firstName: req.body.firstName,
-//         lastName: req.body.lastName,
-//       }
-//     : {
-//         ...commonData,
-//         fullName: req.body.fullName,
-//         nationalID: req.body.nationalID,
-//       };
-// };
-
-// // Function to generate a response with a token
-// const sendResponseWithToken = (user, res) => {
-//   const token = SignToken(user._id.toString());
-//   const userData = user.fullName
-//     ? {
-//         fullName: user.fullName,
-//         email: user.email,
-//         nationality: user.nationality,
-//         nationalID: user.nationalID,
-//       }
-//     : {
-//         firstName: user.firstName,
-//         lastName: user.lastName,
-//         email: user.email,
-//         nationality: user.nationality,
-//       };
-
-//   res.status(200).json({
-//     status: 'success',
-//     token,
-//     data: userData,
-//   });
-// };
-
-// // User signup route
-// exports.signup = catchAsync(async (req, res, next) => {
-//   const userData = extractUserData(req);
-//   const newUser = await User.create(userData);
-//   sendResponseWithToken(newUser, res);
-// });
-
-// // Guest signup route
-// exports.register = catchAsync(async (req, res, next) => {
-//   const guestData = extractUserData(req, true);
-//   const newGuest = await Guest.create(guestData);
-//   sendResponseWithToken(newGuest, res);
-// });
-
 // user login route
 exports.login = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;

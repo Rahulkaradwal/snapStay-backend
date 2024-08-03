@@ -23,7 +23,7 @@ router
 
 router
   .route('/get-my-bookings')
-  .get(authController.protect, bookingController.getMyBookings);
+  .get(authController.guestProtect, bookingController.getMyBookings);
 
 router.route('/getTodaysBooking').get(bookingController.getTodaysBooking);
 

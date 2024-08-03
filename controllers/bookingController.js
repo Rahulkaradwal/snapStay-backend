@@ -172,7 +172,8 @@ exports.webhookCheckout = catchAsync(async (req, res, next) => {
 
 exports.getMyBookings = catchAsync(async (req, res, next) => {
   // all the bookings
-  const bookings = await Booking.find({ user: req.user.id });
+
+  const bookings = await Booking.find({ guest: req.user.id });
 
   // find cabin with return ids
   const cabinId = bookings.map((val) => val.cabin);
