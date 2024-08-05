@@ -96,16 +96,9 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
     );
   }
 
-  // const cabin = await Cabin.findById(req.params.cabinId);
-  // if (!cabin) {
-  //   return next(
-  //     new AppError('Sorry, could not find the Cabin. Please try again.', 404)
-  //   );
-  // }
-
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ['card'],
-    success_url: `${frontEndURL}rooms`,
+    success_url: `${frontEndURL}booking`,
     cancel_url: `${req.protocol}://${req.get('host')}/cancel`,
     customer_email: req.user.email,
     client_reference_id: req.params.cabinId,
@@ -118,16 +111,16 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
             description: `${booking.cabin.description}`,
             images: [booking.cabin.image],
             metadata: {
-              bookingId: booking._id,
-              guestId: booking.guest._id,
-              startDate: booking.startDate,
-              endDate: booking.endDate,
-              numNights: booking.numNights,
-              numGuests: booking.numGuests,
-              price: booking.cabin.totalPrice,
+              bookingId: String(booking._id),
+              guestId: String(booking.guest._id),
+              startDate: String(booking.startDate),
+              endDate: String(booking.endDate),
+              numNights: String(booking.numNights),
+              numGuests: String(booking.numGuests),
+              price: String(booking.cabin.totalPrice),
             },
           },
-          unit_amount: booking.totalPrice * 100, // Make sure regularPrice is in cents
+          unit_amount: booking.totalPrice * 100, // Ensure regularPrice is in cents
         },
         quantity: 1,
       },
