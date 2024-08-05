@@ -145,22 +145,23 @@ exports.createBookingCheckout = catchAsync(async (session, next) => {
     }
     const guestId = guest._id;
 
-    const booking = await Booking.findOne({
-      guest: guestId,
-      cabin: cabinId,
-      isPaid: false,
-      status: 'unconfirmed',
-    });
+    const booking = await Booking.findOneAndUpdate(
+      {
+        guest: guestId,
+        cabin: cabinId,
+        isPaid: false,
+        status: 'unconfirmed',
+      },
+      {
+        isPaid: true,
+        status: 'confirmed',
+      },
+      { new: true, runValidators: true }
+    );
 
     if (!booking) {
       return next(new AppError('Booking not found', 404));
     }
-
-    await Booking.findByIdAndUpdate(
-      booking._id,
-      { isPaid: true, status: 'confirmed' },
-      { new: true, runValidators: true }
-    );
   } catch (err) {
     console.log('Error in creating booking', err);
     return next(new AppError('Sorry! Error in Booking, please try again', 500));
