@@ -141,13 +141,25 @@ exports.createBookingCheckout = catchAsync(async (session, next) => {
     const guest = await Guest.findOne({ email: session.customer_email });
 
     if (!guest) {
-      throw new AppError('Guest not found', 404);
+      return next(new AppError('Guest not found', 404));
     }
     const guestId = guest._id;
 
-    await Booking.updateOne(
-      { cabin: cabinId, guest: guestId, isPaid: true },
-      { status: 'confirmed' }
+    const booking = await Booking.findOne({
+      guest: guestId,
+      cabin: cabinId,
+      isPaid: false,
+      status: 'unconfirmed',
+    });
+
+    if (!booking) {
+      return next(new AppError('Booking not found', 404));
+    }
+
+    await Booking.findByIdAndUpdate(
+      booking._id,
+      { isPaid: true, status: 'confirmed' },
+      { new: true, runValidators: true }
     );
   } catch (err) {
     console.log('Error in creating booking', err);
