@@ -86,12 +86,22 @@ exports.updateBooking = handler.updateOne(Booking);
 exports.deleteBooking = handler.deleteOne(Booking);
 
 exports.getCheckoutSession = catchAsync(async (req, res, next) => {
-  const cabin = await Cabin.findById(req.params.cabinId);
-  if (!cabin) {
+  const booking = await Booking.findOne({
+    cabin: req.params.cabinId,
+    guest: req.user.id,
+  });
+  if (!booking) {
     return next(
-      new AppError('Sorry, could not find the Cabin. Please try again.', 404)
+      new AppError('Sorry, could not find the Booking. Please try again.', 404)
     );
   }
+
+  // const cabin = await Cabin.findById(req.params.cabinId);
+  // if (!cabin) {
+  //   return next(
+  //     new AppError('Sorry, could not find the Cabin. Please try again.', 404)
+  //   );
+  // }
 
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ['card'],
@@ -104,11 +114,20 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
         price_data: {
           currency: 'usd',
           product_data: {
-            name: `${cabin.name} Cabin`,
-            description: `${cabin.description}`,
-            images: [cabin.image],
+            name: `${booking.cabin.name} Cabin`,
+            description: `${booking.cabin.description}`,
+            images: [booking.cabin.image],
+            metadata: {
+              bookingId: booking._id,
+              guestId: booking.guest._id,
+              startDate: booking.startDate,
+              endDate: booking.endDate,
+              numNights: booking.numNights,
+              numGuests: booking.numGuests,
+              price: booking.cabin.totalPrice,
+            },
           },
-          unit_amount: cabin.regularPrice * 100, // Make sure regularPrice is in cents
+          unit_amount: booking.totalPrice * 100, // Make sure regularPrice is in cents
         },
         quantity: 1,
       },
@@ -132,17 +151,11 @@ exports.createBookingCheckout = catchAsync(async (session, next) => {
       throw new AppError('Guest not found', 404);
     }
     const guestId = guest._id;
-    const price = session.amount_total / 100;
 
-    /*
-settings: minBookingLength, maxBookingLength, maxGuestPerBooking, breakfastPrice
-
-
-    starDate, endDAte, numNights, numGuests, cabinPrice,
-    extraPrice, totalPrice, status, hasBreakfast, isPaid, Observations, cabin, guest, createAt
-    */
-
-    await Booking.create({ cabin: cabinId, guest: guestId, price });
+    await Booking.updateOne(
+      { cabin: cabinId, guest: guestId, isPaid: true },
+      { status: 'confirmed' }
+    );
   } catch (err) {
     console.log('Error in creating booking', err);
     return next(new AppError('Sorry! Error in Booking, please try again', 500));
