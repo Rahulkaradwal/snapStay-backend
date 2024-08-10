@@ -282,7 +282,7 @@ exports.restrictTo = (...roles) => {
   };
 };
 
-// route for forget password
+// route for forget password for users
 exports.forgetPassword = catchAsync(async (req, res, next) => {
   const { email } = req.body;
   console.log(email);
@@ -292,6 +292,57 @@ exports.forgetPassword = catchAsync(async (req, res, next) => {
   }
 
   const user = await User.findOne({ email });
+
+  if (!user) {
+    return res.status(200).json({
+      status: 'failed',
+      message: 'No user found with that email',
+    });
+  }
+
+  const resetToken = user.createPasswordResetToken();
+  await user.save({ validateBeforeSave: false });
+
+  const resetUrl = `${req.protocol}://${req.get(
+    'host'
+  )}/users/resetPassword/${resetToken}`;
+  const message = `Forgot your password? Submit a request with your new password and passwordConfirm to: ${resetUrl}.\nIf you did not request this, please ignore this email.`;
+
+  try {
+    await sendMail({
+      to: user.email,
+      subject: 'Your password reset token (valid for 10 mins)',
+      message,
+    });
+
+    res.status(200).json({
+      status: 'success',
+      message: 'You will receive a reset link in your email shortly.',
+    });
+  } catch (err) {
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    await user.save({ validateBeforeSave: false });
+
+    return next(
+      new AppError(
+        'There was an error sending the email. Please try again later.',
+        500
+      )
+    );
+  }
+});
+
+// route for forget password for guests
+exports.forgetGuestPassword = catchAsync(async (req, res, next) => {
+  const { email } = req.body;
+  console.log(email);
+
+  if (!email) {
+    return next(new AppError('Please provide your email.', 400));
+  }
+
+  const user = await Guest.findOne({ email });
 
   if (!user) {
     return res.status(200).json({
@@ -414,7 +465,6 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
 // verification route
 
 exports.verifyEmail = catchAsync(async (req, res, next) => {
-  console.log('in verify email');
   const guest = await Guest.findOne({
     verificationToken: req.params.token,
     verificationTokenExpires: { $gt: Date.now() },
