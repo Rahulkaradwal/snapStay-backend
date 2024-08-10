@@ -350,19 +350,17 @@ exports.forgetGuestPassword = catchAsync(async (req, res, next) => {
       message: 'No user found with that email',
     });
   }
-
+  //http://localhost:5173/reset-password/5678
   const resetToken = user.createPasswordResetToken();
   await user.save({ validateBeforeSave: false });
 
-  const resetUrl = `${req.protocol}://${req.get(
-    'host'
-  )}/users/resetPassword/${resetToken}`;
+  const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
   const message = `Forgot your password? Submit a request with your new password and passwordConfirm to: ${resetUrl}.\nIf you did not request this, please ignore this email.`;
 
   try {
     await sendMail({
       to: user.email,
-      subject: 'Your password reset token (valid for 10 mins)',
+      subject: 'Your password reset link (valid for 10 mins)',
       message,
     });
 
@@ -395,6 +393,50 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
     .digest('hex');
 
   const user = await User.findOne({
+    passwordResetToken: hashedToken,
+    passwordResetExpires: { $gt: Date.now() },
+  });
+
+  if (!user) {
+    return next(
+      new AppError('Sorry! No user found OR the token is expired', 401)
+    );
+  }
+
+  user.password = req.body.password;
+  user.confirmPassword = req.body.confirmPassword;
+  user.passwordResetToken = undefined;
+  user.passwordResetExpires = undefined;
+
+  try {
+    await user.save();
+    res.status(200).send('Password has been reset successfully');
+  } catch (error) {
+    return next(new AppError('Failed to reset password', 500));
+  }
+
+  const token = SignToken(user._id.toString());
+  res.status(200).json({
+    status: 'success',
+    token,
+    data: {
+      user,
+    },
+  });
+});
+
+// route for reset password for guests
+exports.resetGuestPassword = catchAsync(async (req, res, next) => {
+  if (!req.body.password && !req.body.confirmPassword) {
+    return next(new AppError('Sorry! Please enter passwords again!', 401));
+  }
+
+  const hashedToken = crypto
+    .createHash('sha256')
+    .update(req.params.token)
+    .digest('hex');
+
+  const user = await Guest.findOne({
     passwordResetToken: hashedToken,
     passwordResetExpires: { $gt: Date.now() },
   });

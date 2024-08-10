@@ -6,6 +6,8 @@ const express = require('express');
 const router = express.Router();
 
 router.route('/forgetPassword').post(authController.forgetGuestPassword);
+router.route('/resetPassword/:token').post(authController.resetGuestPassword);
+
 router.route('/guestSignup').post(authController.guestSingup);
 router.route('/guestLogin').post(authController.guestLogin);
 
