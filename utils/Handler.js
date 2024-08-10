@@ -85,7 +85,6 @@ exports.addBooking = (Model) => {
 
 exports.updateOne = (Model) => {
   return catchAsync(async (req, res, next) => {
-    console.log(req.body);
     try {
       const data = await Model.findByIdAndUpdate(req.params.id, req.body, {
         new: true,

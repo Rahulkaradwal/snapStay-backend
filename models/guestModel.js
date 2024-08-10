@@ -47,6 +47,13 @@ const guestSchema = new mongoose.Schema({
     type: Boolean,
     default: true,
   },
+
+  verificationToken: String,
+  verificationTokenExpires: Date,
+  isVerified: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 // hash the password when user signup
@@ -76,6 +83,14 @@ guestSchema.methods.changePasswordAfter = function (jwtTimeStamp) {
     return jwtTimeStamp < changedTimeStamp;
   }
   return false;
+};
+
+// verification token
+guestSchema.methods.createVerificationToken = function () {
+  const verificationToken = crypto.randomBytes(32).toString('hex');
+  this.verificationToken = verificationToken;
+  this.verificationTokenExpires = Date.now() + 24 * 60 * 60 * 1000; // Token expires in 24 hours
+  return verificationToken;
 };
 
 // create password Reset Token

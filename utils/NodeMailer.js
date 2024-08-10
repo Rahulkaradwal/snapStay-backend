@@ -3,7 +3,7 @@ const nodemailer = require('nodemailer');
 const { google } = require('googleapis');
 
 const OAUTH_REFRESH_TOKEN =
-  '1//04vEbeLGGLVoVCgYIARAAGAQSNwF-L9Irwp8WoVlQGRyeRicm1ERSWuQ3qaYflio4QVuQnr_rQtFHFSy7NfZg3IqQIT3oHVk5FsI';
+  '1//04xPuMAzFBWFqCgYIARAAGAQSNwF-L9IrEfcEfRXbZtQZ9GlemuQRYIv8jUitKvfLJVqR1ojUaIqKKOBQEYpppbtGoU1-3v84EQY';
 
 const oAuth2Client = new google.auth.OAuth2(
   process.env.OAUTH_CLIENT_ID,
@@ -32,7 +32,6 @@ const sendMail = catchAsync(async (options) => {
     subject: options.subject,
     text: options.message,
   };
-
   await transporter.sendMail(mailOptions);
 });
 

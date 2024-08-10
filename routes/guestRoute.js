@@ -17,6 +17,8 @@ router
   .get(guestController.getAllGuests)
   .post(guestController.addGuest);
 
+router.route('/verifyemail/:token').get(authController.verifyEmail);
+
 router
   .route('/:id')
   .get(guestController.getGuest)

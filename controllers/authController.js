@@ -38,7 +38,12 @@ exports.signup = catchAsync(async (req, res, next) => {
 // guest signup route
 
 exports.guestSingup = catchAsync(async (req, res, next) => {
-  console.log('in the guest singup', req.body);
+  // check existing guest
+  const guestEmail = await Guest.findOne({ email: req.body.email });
+  if (guestEmail) {
+    return next(new AppError('Email already exists', 400));
+  }
+
   const guestData = {
     firstName: req.body.firstName,
     lastName: req.body.lastName,
@@ -49,21 +54,38 @@ exports.guestSingup = catchAsync(async (req, res, next) => {
     confirmPassword: req.body.confirmPassword,
   };
   const newGuest = await Guest.create(guestData);
-  const guest = {
-    firstName: newGuest.firstName,
-    lastName: newGuest.lastName,
-    email: newGuest.email,
-    nationality: newGuest.nationality,
-    phoneNumber: newGuest.phoneNumber,
-    id: newGuest._id,
-  };
 
-  const token = SignToken(newGuest._id.toString());
+  // send verification email
+  const verificationToken = newGuest.createVerificationToken();
+  await newGuest.save({ validateBeforeSave: false });
 
-  res.status(200).json({
+  const message = `Your verification token is ${verificationToken} \n\n Please click on the link below, this link will expire in 24 hours \n\n ${process.env.FRONTEND_URL}/verify/${verificationToken}`;
+
+  try {
+    await sendMail({
+      to: newGuest.email,
+      subject: 'Verification Email',
+      message,
+    });
+  } catch (err) {
+    newGuest.verificationToken = undefined;
+    newGuest.verificationTokenExpires = undefined;
+    await newGuest.save({ validateBeforeSave: false });
+
+    return next(
+      new AppError(
+        'There was an error sending the email. Please try again later.',
+        500
+      )
+    );
+  }
+
+  // const token = SignToken(newGuest._id.toString());
+
+  res.status(201).json({
     status: 'success',
-    token,
-    data: guest,
+    message:
+      'Signup successful! Please verify your email to complete the registration.',
   });
 });
 
@@ -263,6 +285,7 @@ exports.restrictTo = (...roles) => {
 // route for forget password
 exports.forgetPassword = catchAsync(async (req, res, next) => {
   const { email } = req.body;
+  console.log(email);
 
   if (!email) {
     return next(new AppError('Please provide your email.', 400));
@@ -272,8 +295,8 @@ exports.forgetPassword = catchAsync(async (req, res, next) => {
 
   if (!user) {
     return res.status(200).json({
-      status: 'success',
-      message: 'Shortly! You will receive a link to reset your password.',
+      status: 'failed',
+      message: 'No user found with that email',
     });
   }
 
@@ -294,8 +317,7 @@ exports.forgetPassword = catchAsync(async (req, res, next) => {
 
     res.status(200).json({
       status: 'success',
-      message:
-        'If your email exists in our system, you will receive a reset token shortly.',
+      message: 'You will receive a reset link in your email shortly.',
     });
   } catch (err) {
     user.passwordResetToken = undefined;
@@ -386,5 +408,32 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
     data: {
       user,
     },
+  });
+});
+
+// verification route
+
+exports.verifyEmail = catchAsync(async (req, res, next) => {
+  console.log('in verify email');
+  const guest = await Guest.findOne({
+    verificationToken: req.params.token,
+    verificationTokenExpires: { $gt: Date.now() },
+  });
+
+  console.log('guest', guest);
+
+  if (!guest) {
+    return next(
+      new AppError('Verification token is invalid or has expired', 401)
+    );
+  }
+
+  guest.isVerified = true;
+  guest.verificationToken = undefined;
+  guest.verificationTokenExpires = undefined;
+  await guest.save();
+  res.status(200).json({
+    status: 'success',
+    message: 'Email verified successfully! You can now login',
   });
 });
