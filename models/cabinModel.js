@@ -31,12 +31,31 @@ const cabinSchema = new mongoose.Schema({
     ref: 'Setting',
     required: [true, 'Booking Settings are requried'],
   },
+  bookedDates: [
+    {
+      bookingId: {
+        type: String,
+        select: false,
+      },
+      startDate: {
+        type: Date,
+      },
+      endDate: {
+        type: Date,
+      },
+    },
+  ],
 });
 
 cabinSchema.pre(/^find/, function (next) {
   this.populate({ path: 'bookingSettings' });
   next();
 });
+
+// cabinSchema.pre(/^find/, function (next) {
+//   this.populate({ path: 'bookings', select: 'startDate endDate ' });
+//   next();
+// });
 
 const Cabin = mongoose.model('Cabin', cabinSchema);
 

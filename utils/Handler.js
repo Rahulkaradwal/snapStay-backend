@@ -1,6 +1,7 @@
 const catchAsync = require('./CatchAsync');
 const AppError = require('./AppError');
 const QueryFeatures = require('./QueryFeatures');
+const Cabin = require('../models/cabinModel');
 
 // get all Model
 exports.getAll = (Model) => {
@@ -66,11 +67,32 @@ exports.addOne = (Model) => {
   });
 };
 
-// create booking without payment
 exports.addBooking = (Model) => {
   return catchAsync(async (req, res, next) => {
+    const { startDate, endDate, cabin } = req.body;
+
     try {
+      // Create the booking
       const data = await Model.create(req.body);
+
+      // Update the cabin with the new booking ID and dates
+      await Cabin.findByIdAndUpdate(
+        cabin,
+        {
+          $push: {
+            bookedDates: {
+              bookingId: data._id,
+              startDate,
+              endDate,
+            },
+          },
+        },
+        {
+          new: true,
+          runValidators: true,
+        }
+      );
+
       res.status(200).json({
         status: 'success',
         data: data,
