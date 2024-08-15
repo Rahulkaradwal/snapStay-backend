@@ -7,7 +7,6 @@ const User = require('../models/userModel');
 const Guest = require('../models/guestModel');
 
 // stripe config
-const frontEndURL = 'http://localhost:5173/';
 const STRIPE_WEBHOOK_SECRET = 'whsec_htrwehhghTLCgvH5prHvZyc0d1Iu4kfD';
 // const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
 const stripeSecretKey =
@@ -98,7 +97,7 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
 
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ['card'],
-    success_url: `${frontEndURL}/booking`,
+    success_url: `${process.env.FRONTEND_URL}/booking`,
     cancel_url: `${req.protocol}://${req.get('host')}/cancel`,
     customer_email: req.user.email,
     client_reference_id: req.params.cabinId,
