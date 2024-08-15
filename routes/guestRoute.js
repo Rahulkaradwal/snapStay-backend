@@ -17,15 +17,29 @@ router
 
 router
   .route('/')
-  .get(guestController.getAllGuests)
+  .get(
+    authController.protect,
+    authController.restrictTo('admin'),
+    guestController.getAllGuests
+  )
   .post(guestController.addGuest);
 
 router.route('/verifyemail/:token').get(authController.verifyEmail);
 
+router.route('/lastName/:lastName').get(guestController.getGuestByName);
+
 router
   .route('/:id')
   .get(guestController.getGuest)
-  .delete(guestController.deleteGuest)
-  .patch(guestController.updateGuest);
+  .delete(
+    authController.protect,
+    authController.restrictTo('admin'),
+    guestController.deleteGuest
+  )
+  .patch(
+    authController.protect,
+    authController.restrictTo('admin'),
+    guestController.updateGuest
+  );
 
 module.exports = router;

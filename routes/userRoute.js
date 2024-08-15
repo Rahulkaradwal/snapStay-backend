@@ -23,7 +23,13 @@ router
   .get(userController.getUser)
   .patch(userController.updateUser);
 
-router.route('/name/:name').get(userController.getUsersByName);
+router
+  .route('/name/:name')
+  .get(
+    authController.protect,
+    authController.restrictTo('admin'),
+    userController.getUsersByName
+  );
 
 router.get('/me', userController.getMe, userController.getUser);
 

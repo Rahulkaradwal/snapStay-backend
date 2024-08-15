@@ -32,6 +32,7 @@ const sendMail = catchAsync(async (options) => {
     subject: options.subject,
     text: options.message,
   };
+
   await transporter.sendMail(mailOptions);
 });
 

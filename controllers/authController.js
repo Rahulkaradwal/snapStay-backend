@@ -59,7 +59,7 @@ exports.guestSingup = catchAsync(async (req, res, next) => {
   const verificationToken = newGuest.createVerificationToken();
   await newGuest.save({ validateBeforeSave: false });
 
-  const message = `Your verification token is ${verificationToken} \n\n Please click on the link below, this link will expire in 24 hours \n\n ${process.env.FRONTEND_URL}/verify/${verificationToken}`;
+  const message = `Your verification token is ${verificationToken} \n\n Please click on the link below, this link will expire in 24 hours \n\n ${process.env.FRONTEND_URL}/verify-email/${verificationToken}`;
 
   try {
     await sendMail({
@@ -512,12 +512,13 @@ exports.verifyEmail = catchAsync(async (req, res, next) => {
     verificationTokenExpires: { $gt: Date.now() },
   });
 
-  console.log('guest', guest);
-
   if (!guest) {
-    return next(
-      new AppError('Verification token is invalid or has expired', 401)
-    );
+    res.status(404).json({
+      status: 'fail',
+      message: 'Verification token is invalid or has expired',
+    });
+
+    return;
   }
 
   guest.isVerified = true;
