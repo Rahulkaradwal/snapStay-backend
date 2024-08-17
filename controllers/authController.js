@@ -129,8 +129,13 @@ exports.guestLogin = catchAsync(async (req, res, next) => {
   }
 
   const guest = await Guest.findOne({ email }).select('+password');
+
   if (!guest) {
     return next(new AppError('Guest not found', 404));
+  }
+
+  if (!guest.isVerified) {
+    return next(new AppError('Please verify your email', 401));
   }
 
   if (!(await guest.compareGuestPassword(password, guest.password))) {
