@@ -2,6 +2,7 @@ const catchAsync = require('./CatchAsync');
 const AppError = require('./AppError');
 const QueryFeatures = require('./QueryFeatures');
 const Cabin = require('../models/cabinModel');
+const Booking = require('../models/bookingModel');
 
 // get all Model
 exports.getAll = (Model) => {
@@ -107,21 +108,54 @@ exports.addBooking = (Model) => {
 
 exports.updateOne = (Model) => {
   return catchAsync(async (req, res, next) => {
-    try {
-      const data = await Model.findByIdAndUpdate(req.params.id, req.body, {
-        new: true,
-        runValidators: true,
-      });
-      if (!data) {
-        next(new AppError('No data found with that ID', 404));
+    if (req.body?.status === 'checked-out') {
+      try {
+        const data = await Model.findByIdAndUpdate(req.params.id, req.body, {
+          new: true,
+          runValidators: true,
+        });
+
+        if (!data) {
+          next(new AppError('No data found with that ID', 404));
+        }
+        // update the bookedDates array with the booking ID
+        await Cabin.findByIdAndUpdate(
+          data.cabin,
+          {
+            $pull: {
+              bookedDates: {
+                bookingId: data._id,
+              },
+            },
+          },
+          {
+            new: true,
+            runValidators: true,
+          }
+        );
+        res.status(200).json({
+          status: 'success',
+          data: data,
+        });
+      } catch (err) {
+        next(new AppError('Server Error, Could not update the data ', 400));
       }
-      res.status(200).json({
-        status: 'success',
-        data: data,
-      });
-    } catch (err) {
-      next(new AppError('Server Error, Could not update the data ', 400));
-    }
+    } else
+      try {
+        const data = await Model.findByIdAndUpdate(req.params.id, req.body, {
+          new: true,
+          runValidators: true,
+        });
+        if (!data) {
+          next(new AppError('No data found with that ID', 404));
+        }
+        res.status(200).json({
+          status: 'success',
+          data: data,
+        });
+      } catch (err) {
+        next(new AppError('Server Error, Could not update the data ', 400));
+      }
   });
 };
 
@@ -129,20 +163,57 @@ exports.updateOne = (Model) => {
 
 exports.deleteOne = (Model) => {
   return catchAsync(async (req, res, next) => {
-    try {
-      const data = await Model.findByIdAndDelete(req.params.id);
-      if (!data) {
-        return next(new AppError('Sorry, no data found', 404));
-      }
+    let data;
 
-      res.status(204).json({
-        status: 'success',
-        data: null,
-      });
-    } catch (err) {
-      next(
-        new AppError('Internal server error, could not delete the cabin', 500)
-      );
+    if (Model === Booking) {
+      try {
+        // Find the booking to be deleted
+        data = await Model.findByIdAndDelete(req.params.id);
+        if (!data) {
+          return next(new AppError('Sorry, no data found', 404));
+        }
+        // Update the Cabin bookedDates field by removing the deleted booking
+        await Cabin.findByIdAndUpdate(
+          data.cabin, // Assuming 'data.cabin' contains the cabin ID
+          {
+            $pull: {
+              bookedDates: {
+                bookingId: data._id,
+              },
+            },
+          },
+          {
+            new: true,
+            runValidators: true,
+          }
+        );
+
+        res.status(204).json({
+          status: 'success',
+          data: null,
+        });
+      } catch (err) {
+        next(
+          new AppError('Internal server error, could not delete the data', 500)
+        );
+      }
+    } else {
+      try {
+        // For other models, simply delete the document by ID
+        data = await Model.findByIdAndDelete(req.params.id);
+        if (!data) {
+          return next(new AppError('Sorry, no data found', 404));
+        }
+
+        res.status(204).json({
+          status: 'success',
+          data: null,
+        });
+      } catch (err) {
+        next(
+          new AppError('Internal server error, could not delete the data', 500)
+        );
+      }
     }
   });
 };

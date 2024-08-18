@@ -41,7 +41,13 @@ exports.guestSingup = catchAsync(async (req, res, next) => {
   // check existing guest
   const guestEmail = await Guest.findOne({ email: req.body.email });
   if (guestEmail) {
-    return next(new AppError('Email already exists', 400));
+    if (guestEmail.isVerified) {
+      return next(new AppError('Email already exists', 400));
+    }
+    !guestEmail.isVerified;
+    {
+      await Guest.deleteOne({ email: req.body.email });
+    }
   }
 
   const guestData = {
