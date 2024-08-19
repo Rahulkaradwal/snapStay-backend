@@ -270,13 +270,15 @@ exports.cancelBooking = catchAsync(async (req, res, next) => {
   Booking Details:
   - Booking ID: ${booking._id}
   - Cabin: ${cabinData.name}
-  - Start Date: ${booking.startDate}
-  - End Date: ${booking.endDate}
+  - Start Date: ${booking.startDate.toDateString()}
+  - End Date: ${booking.endDate.toDateString()}
   - Number of Guests: ${booking.numGuests}
   - Number of Nights: ${booking.numNights}
   - Guest: ${guestData.firstName} ${guestData.lastName}
   - Total Price: ${booking.totalPrice}
-  - Breakfast Included: ${booking.hasBreakfast ? 'Yes' : 'No'}`;
+  - Breakfast Included: ${booking.hasBreakfast ? 'Yes' : 'No'}
+  
+   If you have any questions or special requests, please don't hesitate to contact us.`;
 
   // send the mail
   try {
