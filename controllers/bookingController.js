@@ -90,7 +90,6 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
     cabin: req.params.cabinId,
     guest: req.user.id,
   });
-
   if (!booking) {
     return next(
       new AppError('Sorry, could not find the Booking. Please try again.', 404)
@@ -118,10 +117,10 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
               endDate: String(booking.endDate),
               numNights: String(booking.numNights),
               numGuests: String(booking.numGuests),
-              price: String(booking.totalPrice),
+              price: String(booking.cabin.totalPrice),
             },
           },
-          unit_amount: booking.totalPrice * 100, // Ensure totalPrice is in cents
+          unit_amount: booking.totalPrice * 100, // Ensure regularPrice is in cents
         },
         quantity: 1,
       },
@@ -138,19 +137,18 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
 exports.createBookingCheckout = catchAsync(async (session, next) => {
   try {
     const cabinId = session.client_reference_id;
+
     const guest = await Guest.findOne({ email: session.customer_email });
 
     if (!guest) {
       return next(new AppError('Guest not found', 404));
     }
-
     const guestId = guest._id;
 
     const booking = await Booking.findOneAndUpdate(
       {
         guest: guestId,
         cabin: cabinId,
-        stripePaymentIntentId: session.payment_intent,
         isPaid: false,
         status: 'unconfirmed',
       },
@@ -256,31 +254,40 @@ exports.cancelBooking = catchAsync(async (req, res, next) => {
     );
   }
 
-  // Retrieve the PaymentIntent from Stripe to check its status
-  // try {
-  //   const paymentIntent = await stripe.paymentIntents.retrieve(
-  //     booking.stripePaymentIntentId
-  //   );
-
-  //   if (paymentIntent.status !== 'succeeded') {
-  //     return next(
-  //       new AppError(
-  //         'Cannot refund a PaymentIntent that has not succeeded.',
-  //         400
-  //       )
-  //     );
-  //   }
-
-  //   // Proceed with refund if the PaymentIntent has succeeded
-  //   const refund = await stripe.refunds.create({
-  //     payment_intent: booking.stripePaymentIntentId,
-  //   });
-  //   console.log('Refund successful:', refund);
+  if (booking.status === 'cancelled') {
+    return next(new AppError('Booking already cancelled', 400));
+  }
 
   // Update booking status to 'cancelled' and set isPaid to false
   booking.status = 'cancelled';
   booking.isPaid = false;
   await booking.save();
+
+  const cabinData = await Cabin.findById(booking.cabin);
+  const guestData = await Guest.findById(booking.guest);
+
+  const message = `Your booking has been cancelled! 🎉
+  Booking Details:
+  - Booking ID: ${booking._id}
+  - Cabin: ${cabinData.name}
+  - Start Date: ${booking.startDate}
+  - End Date: ${booking.endDate}
+  - Number of Guests: ${booking.numGuests}
+  - Number of Nights: ${booking.numNights}
+  - Guest: ${guestData.firstName} ${guestData.lastName}
+  - Total Price: ${booking.totalPrice}
+  - Breakfast Included: ${booking.hasBreakfast ? 'Yes' : 'No'}`;
+
+  // send the mail
+  try {
+    await sendMail({
+      to: guestData.email,
+      subject: 'Booking Cancelled',
+      message,
+    });
+  } catch (err) {
+    console.log(err);
+  }
 
   // Update the cabin's bookedDates array by removing the canceled booking
   await Cabin.findByIdAndUpdate(

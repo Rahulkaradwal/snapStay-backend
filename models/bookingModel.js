@@ -61,11 +61,7 @@ const bookingSchema = new mongoose.Schema({
     ref: 'Guest',
     required: [true, 'guest is required'],
   },
-  stripePaymentIntentId: {
-    type: String,
-    default: false,
-    required: true,
-  },
+
   createdAt: {
     type: Date,
     default: Date.now(),

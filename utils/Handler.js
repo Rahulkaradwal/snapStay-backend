@@ -75,20 +75,9 @@ exports.addOne = (Model) => {
 
 exports.addBooking = (Model) => {
   return catchAsync(async (req, res, next) => {
-    console.log(req.body);
     const { startDate, endDate, cabin } = req.body;
 
     try {
-      // Create the Stripe payment intent
-      const paymentIntent = await stripe.paymentIntents.create({
-        amount: req.body.totalPrice * 100, // amount in cents
-        currency: 'usd',
-        payment_method_types: ['card'],
-      });
-
-      // Include the paymentIntent ID in the booking data
-      req.body.stripePaymentIntentId = paymentIntent.id;
-
       // Create the booking
       const data = await Model.create(req.body);
 
