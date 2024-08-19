@@ -2,7 +2,9 @@ const catchAsync = require('./CatchAsync');
 const AppError = require('./AppError');
 const QueryFeatures = require('./QueryFeatures');
 const Cabin = require('../models/cabinModel');
+const Guest = require('../models/guestModel');
 const Booking = require('../models/bookingModel');
+const sendMail = require('./NodeMailer');
 const stripeSecretKey =
   'sk_test_51PKq1n02bTSpcbhuRA2ibFPkwKhQgFkl3Qcd7MZn0TQfSADlJz6XSYcy9TYet7xnWxVha7kYQni83B75R6K5zUVc00D24qjtkB';
 const stripe = require('stripe')(stripeSecretKey);
@@ -73,6 +75,7 @@ exports.addOne = (Model) => {
 
 exports.addBooking = (Model) => {
   return catchAsync(async (req, res, next) => {
+    console.log(req.body);
     const { startDate, endDate, cabin } = req.body;
 
     try {
@@ -90,7 +93,7 @@ exports.addBooking = (Model) => {
       const data = await Model.create(req.body);
 
       // Update the cabin with the new booking ID and dates
-      await Cabin.findByIdAndUpdate(
+      const cabinData = await Cabin.findByIdAndUpdate(
         cabin,
         {
           $push: {
@@ -106,6 +109,36 @@ exports.addBooking = (Model) => {
           runValidators: true,
         }
       );
+
+      // get the guest email
+
+      const guest = await Guest.findById(data.guest);
+      console.log(guest.email);
+
+      // send the mail
+
+      const message = `Your booking has been confirmed! 🎉
+      Booking Details:
+      - Cabin: ${cabinData.name} 
+      - Booking ID: ${data._id}
+      - Total Price: $${data.totalPrice}
+      - Dates: ${data.startDate.toDateString()} to ${data.endDate.toDateString()} (${
+        data.numNights
+      } nights)
+      - Number of Guests: ${data.numGuests}
+      - Breakfast Included: ${data.hasBreakfast ? 'Yes' : 'No'}
+
+      Thank you for choosing our service. We look forward to hosting you! If you have any questions or special requests, please don't hesitate to contact us.`;
+
+      try {
+        await sendMail({
+          to: guest.email,
+          subject: 'Booking Confirmation',
+          message,
+        });
+      } catch (err) {
+        console.log(err);
+      }
 
       res.status(200).json({
         status: 'success',
