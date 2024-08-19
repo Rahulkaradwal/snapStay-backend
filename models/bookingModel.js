@@ -31,7 +31,13 @@ const bookingSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['confirmed', 'unconfirmed', 'checked-in', 'checked-out'],
+    enum: [
+      'confirmed',
+      'unconfirmed',
+      'checked-in',
+      'checked-out',
+      'cancelled',
+    ],
     default: 'unconfirmed',
   },
   hasBreakfast: {
@@ -54,6 +60,11 @@ const bookingSchema = new mongoose.Schema({
     type: mongoose.Schema.ObjectId,
     ref: 'Guest',
     required: [true, 'guest is required'],
+  },
+  stripePaymentIntentId: {
+    type: String,
+    default: false,
+    required: true,
   },
   createdAt: {
     type: Date,

@@ -17,6 +17,12 @@ router.get(
   bookingController.getCheckoutSession
 );
 
+router.get(
+  '/cancelBooking/:bookingId',
+  authController.guestProtect,
+  bookingController.cancelBooking
+);
+
 router
   .route('/create-booking')
   .post(authController.guestProtect, bookingController.createBooking);

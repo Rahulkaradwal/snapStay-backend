@@ -3,6 +3,9 @@ const AppError = require('./AppError');
 const QueryFeatures = require('./QueryFeatures');
 const Cabin = require('../models/cabinModel');
 const Booking = require('../models/bookingModel');
+const stripeSecretKey =
+  'sk_test_51PKq1n02bTSpcbhuRA2ibFPkwKhQgFkl3Qcd7MZn0TQfSADlJz6XSYcy9TYet7xnWxVha7kYQni83B75R6K5zUVc00D24qjtkB';
+const stripe = require('stripe')(stripeSecretKey);
 
 // get all Model
 exports.getAll = (Model) => {
@@ -73,6 +76,16 @@ exports.addBooking = (Model) => {
     const { startDate, endDate, cabin } = req.body;
 
     try {
+      // Create the Stripe payment intent
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: req.body.totalPrice * 100, // amount in cents
+        currency: 'usd',
+        payment_method_types: ['card'],
+      });
+
+      // Include the paymentIntent ID in the booking data
+      req.body.stripePaymentIntentId = paymentIntent.id;
+
       // Create the booking
       const data = await Model.create(req.body);
 
@@ -99,6 +112,7 @@ exports.addBooking = (Model) => {
         data: data,
       });
     } catch (err) {
+      console.log(err);
       next(new AppError('Could not add Booking', 400));
     }
   });
