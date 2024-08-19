@@ -113,7 +113,6 @@ exports.addBooking = (Model) => {
       // get the guest email
 
       const guest = await Guest.findById(data.guest);
-      console.log(guest.email);
 
       // send the mail
 

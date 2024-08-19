@@ -5,6 +5,7 @@ const AppError = require('../utils/AppError');
 const Cabin = require('../models/cabinModel');
 const User = require('../models/userModel');
 const Guest = require('../models/guestModel');
+const sendMail = require('../utils/NodeMailer');
 
 // stripe config
 const STRIPE_WEBHOOK_SECRET = 'whsec_htrwehhghTLCgvH5prHvZyc0d1Iu4kfD';
@@ -162,6 +163,34 @@ exports.createBookingCheckout = catchAsync(async (session, next) => {
 
     if (!booking) {
       return next(new AppError('Booking not found', 404));
+    }
+
+    const cabin = await Cabin.findById(cabinId);
+
+    const message = `Your Payment has been confirmed! 🎉
+    Booking Details:
+  - Payment ID: ${session.payment_intent}
+  - Booking ID: ${booking._id}
+  - Cabin: ${cabin.name}
+  - Start Date: ${booking.startDate}
+  - End Date: ${booking.endDate}
+  - Number of Guests: ${booking.numGuests}
+  - Number of Nights: ${booking.numNights}
+  - Guest: ${guest.firstName} ${guest.lastName}
+  - Total Price: ${booking.totalPrice}
+  - Breakfast Included: ${data.hasBreakfast ? 'Yes' : 'No'}
+
+   Thank you for choosing our service. We look forward to hosting you! If you have any questions or special requests, please don't hesitate to contact us.`;
+
+    // send the mail
+    try {
+      await sendMail({
+        to: guest.email,
+        subject: 'Payment Confirmation',
+        message,
+      });
+    } catch (err) {
+      console.log(err);
     }
   } catch (err) {
     console.log('Error in creating booking', err);
