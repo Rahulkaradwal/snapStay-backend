@@ -92,7 +92,7 @@ exports.guestSingup = catchAsync(async (req, res, next) => {
   res.status(201).json({
     status: 'success',
     message:
-      'Signup successful! Please verify your email to complete the registration.',
+      'Signup successful! Please verify your email to complete the registration. If you dont receive the email, please try again.',
   });
 });
 
@@ -321,7 +321,7 @@ exports.forgetPassword = catchAsync(async (req, res, next) => {
   const message = `Forgot your password? Submit a request with your new password and passwordConfirm to: ${resetUrl}.\nIf you did not request this, please ignore this email.`;
 
   try {
-    await sendMail({
+    sendMail({
       to: user.email,
       subject: 'Your password reset token (valid for 10 mins)',
       message,
@@ -329,7 +329,8 @@ exports.forgetPassword = catchAsync(async (req, res, next) => {
 
     res.status(200).json({
       status: 'success',
-      message: 'You will receive a reset link in your email shortly.',
+      message:
+        'You will receive a reset link in your email shortly. If you do not receive an email, please try again.',
     });
   } catch (err) {
     user.passwordResetToken = undefined;
@@ -369,7 +370,7 @@ exports.forgetGuestPassword = catchAsync(async (req, res, next) => {
   const message = `Forgot your password? Submit a request with your new password and passwordConfirm to: ${resetUrl}.\nIf you did not request this, please ignore this email.`;
 
   try {
-    await sendMail({
+    sendMail({
       to: user.email,
       subject: 'Your password reset link (valid for 10 mins)',
       message,

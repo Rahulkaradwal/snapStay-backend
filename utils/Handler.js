@@ -119,7 +119,7 @@ exports.addBooking = (Model) => {
       Thank you for choosing our service. We look forward to hosting you! If you have any questions or special requests, please don't hesitate to contact us.`;
 
       try {
-        await sendMail({
+        sendMail({
           to: guest.email,
           subject: 'Booking Confirmation',
           message,
