@@ -65,10 +65,11 @@ exports.guestSingup = catchAsync(async (req, res, next) => {
   const verificationToken = newGuest.createVerificationToken();
   await newGuest.save({ validateBeforeSave: false });
 
-  const message = `Your verification token is ${verificationToken} \n\n Please click on the link below, this link will expire in 24 hours \n\n ${process.env.FRONTEND_URL}/verify-email/${verificationToken}`;
+  // send verification email
 
+  const message = `Your verification token is ${verificationToken} \n\n Please click on the link below, this link will expire in 24 hours \n\n ${process.env.FRONTEND_URL}/verify-email/${verificationToken}`;
   try {
-    await sendMail({
+    sendMail({
       to: newGuest.email,
       subject: 'Verification Email',
       message,
@@ -361,7 +362,6 @@ exports.forgetGuestPassword = catchAsync(async (req, res, next) => {
       message: 'No user found with that email',
     });
   }
-  //http://localhost:5173/reset-password/5678
   const resetToken = user.createPasswordResetToken();
   await user.save({ validateBeforeSave: false });
 

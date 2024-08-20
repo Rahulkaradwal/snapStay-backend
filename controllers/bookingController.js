@@ -182,7 +182,7 @@ exports.createBookingCheckout = catchAsync(async (session, next) => {
 
     // send the mail
     try {
-      await sendMail({
+      sendMail({
         to: guest.email,
         subject: 'Payment Confirmation',
         message,
@@ -282,7 +282,7 @@ exports.cancelBooking = catchAsync(async (req, res, next) => {
 
   // send the mail
   try {
-    await sendMail({
+    sendMail({
       to: guestData.email,
       subject: 'Booking Cancelled',
       message,
