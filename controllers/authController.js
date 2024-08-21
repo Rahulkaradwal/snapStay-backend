@@ -67,7 +67,7 @@ exports.guestSingup = catchAsync(async (req, res, next) => {
 
   // send verification email
 
-  const message = `Your verification token is ${verificationToken} \n\n Please click on the link below, this link will expire in 24 hours \n\n ${process.env.FRONTEND_URL}/verify-email/${verificationToken}`;
+  const message = `Hello ${newGuest.firstName} ${newGuest.lastName} , \n\n Thank you for signing up. Please verify your email to complete the registration. \n\n Please click on the link below, this link will expire in 24 hours \n\n ${process.env.FRONTEND_URL}/verify-email/${verificationToken}`;
   try {
     sendMail({
       to: newGuest.email,
