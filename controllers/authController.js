@@ -218,7 +218,6 @@ exports.protect = (Modal) => {
         new AppError('User recently changed password, please login again', 401)
       );
     }
-
     // Attach the user to the request object
     req.user = freshUser;
 
@@ -246,7 +245,6 @@ exports.restrictTo = (...roles) => {
 exports.forgetPassword = (Modal) => {
   return catchAsync(async (req, res, next) => {
     const { email } = req.body;
-    console.log(email);
 
     if (!email) {
       return next(new AppError('Please provide your email.', 400));

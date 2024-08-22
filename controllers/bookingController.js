@@ -276,9 +276,7 @@ exports.cancelBooking = catchAsync(async (req, res, next) => {
       subject: 'Booking Cancelled',
       message,
     });
-  } catch (err) {
-    console.log(err);
-  }
+  } catch (err) {}
 
   // Update the cabin's bookedDates array by removing the canceled booking
   await Cabin.findByIdAndUpdate(

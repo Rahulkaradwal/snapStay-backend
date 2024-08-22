@@ -133,7 +133,6 @@ exports.addBooking = (Model) => {
         data: data,
       });
     } catch (err) {
-      console.log(err);
       next(new AppError('Could not add Booking', 400));
     }
   });

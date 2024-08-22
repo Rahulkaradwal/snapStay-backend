@@ -37,6 +37,8 @@ const sendMail = catchAsync(async (options) => {
       refreshToken: process.env.OAUTH_REFRESH_TOKEN,
       accessToken,
     },
+    logger: true,
+    debug: true,
   });
 
   const mailOptions = {
