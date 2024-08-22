@@ -62,6 +62,11 @@ const GuestRouter = require('./routes/guestRoute');
 const UserRouter = require('./routes/userRoute');
 const SettingsRouter = require('./routes/settingsRoute');
 
+// app.use((req, res, next) => {
+//   console.log('request url', req.originalUrl);
+//   next();
+// });
+
 app.use('/cabins', CabinRouter);
 app.use('/bookings', BookingRouter);
 app.use('/guests', GuestRouter);

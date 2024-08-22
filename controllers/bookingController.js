@@ -2,14 +2,11 @@ const Booking = require('../models/bookingModel');
 const handler = require('../utils/Handler');
 const catchAsync = require('../utils/CatchAsync');
 const AppError = require('../utils/AppError');
-const Cabin = require('../models/cabinModel');
-const User = require('../models/userModel');
 const Guest = require('../models/guestModel');
 const sendMail = require('../utils/NodeMailer');
 
 // stripe config
 const STRIPE_WEBHOOK_SECRET = 'whsec_htrwehhghTLCgvH5prHvZyc0d1Iu4kfD';
-// const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
 const stripeSecretKey =
   'sk_test_51PKq1n02bTSpcbhuRA2ibFPkwKhQgFkl3Qcd7MZn0TQfSADlJz6XSYcy9TYet7xnWxVha7kYQni83B75R6K5zUVc00D24qjtkB';
 const stripe = require('stripe')(stripeSecretKey);
@@ -73,8 +70,6 @@ exports.getTodaysBooking = catchAsync(async (req, res, next) => {
     next(new AppError('Could not load todays Booking', 401));
   }
 });
-
-// });
 
 // create Booking without Stripe and user can pay later at desk
 exports.createBooking = handler.addBooking(Booking);
@@ -191,7 +186,6 @@ exports.createBookingCheckout = catchAsync(async (session, next) => {
       console.log(err);
     }
   } catch (err) {
-    console.log('Error in creating booking', err);
     return next(new AppError('Sorry! Error in Booking, please try again', 500));
   }
 });
@@ -221,15 +215,10 @@ exports.getMyBookings = catchAsync(async (req, res, next) => {
   // all the bookings
 
   const bookings = await Booking.find({ guest: req.user.id });
-  // console.log(bookings);
 
   if (!bookings) {
     return next(new AppError('No bookings found', 404));
   }
-
-  // // find cabin with return ids
-  // const cabinId = bookings.map((val) => val.cabin);
-  // const cabins = await Cabin.find({ _id: { $in: cabinId } });
 
   res.status(200).json({
     status: 'success',

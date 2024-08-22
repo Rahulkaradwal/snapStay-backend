@@ -2,6 +2,7 @@ const User = require('../models/userModel');
 const Handler = require('../utils/Handler');
 const catchAsync = require('../utils/CatchAsync');
 const AppError = require('../utils/AppError');
+const authController = require('../controllers/authController');
 
 const filterField = (value, ...allowedFileds) => {
   let obj = {};
@@ -65,7 +66,7 @@ exports.getMe = (req, res, next) => {
 exports.getCurrentUser = catchAsync(async (req, res, next) => {
   const currentUser = req.user;
   if (!currentUser) {
-    next(new AppError('No user Exists'));
+    return next(new AppError('No user Exists', 404));
   }
 
   res.status(200).json({
@@ -86,6 +87,27 @@ exports.getUsersByName = catchAsync(async (req, res, next) => {
       data: users,
     });
   } catch (err) {
-    next(new AppError('Could not find the user'));
+    return next(new AppError('Could not find the user', 404));
   }
 });
+// Authentication Routes
+// register
+exports.signup = authController.signup(User);
+
+// login
+exports.login = authController.login(User);
+
+// protect
+exports.protect = authController.protect(User);
+
+// forgot password
+exports.forgotPassword = authController.forgetPassword(User);
+
+// verify email
+exports.verifyEmail = authController.verifyEmail(User);
+
+// reset password
+exports.resetPassword = authController.resetPassword(User);
+
+// update password
+exports.updatePassword = authController.updatePassword(User);

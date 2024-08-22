@@ -1,5 +1,6 @@
 const bookingController = require('../controllers/bookingController');
 const authController = require('../controllers/authController');
+const guestController = require('../controllers/guestController');
 
 const express = require('express');
 const router = express.Router();
@@ -9,11 +10,11 @@ router
   .route('/getBooking/:id')
   .get(bookingController.getBooking)
   .patch(bookingController.updateBooking)
-  .delete(authController.guestProtect, bookingController.deleteBooking);
+  .delete(guestController.protect, bookingController.deleteBooking);
 
 router.get(
   '/checkout-session/:cabinId',
-  authController.guestProtect,
+  guestController.protect,
   bookingController.getCheckoutSession
 );
 
@@ -25,11 +26,11 @@ router.get(
 
 router
   .route('/create-booking')
-  .post(authController.guestProtect, bookingController.createBooking);
+  .post(guestController.protect, bookingController.createBooking);
 
 router
   .route('/get-my-bookings')
-  .get(authController.guestProtect, bookingController.getMyBookings);
+  .get(guestController.protect, bookingController.getMyBookings);
 
 router.route('/getTodaysBooking').get(bookingController.getTodaysBooking);
 
