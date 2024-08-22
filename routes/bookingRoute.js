@@ -20,7 +20,7 @@ router.get(
 
 router.get(
   '/cancelBooking/:bookingId',
-  authController.guestProtect,
+  guestController.protect,
   bookingController.cancelBooking
 );
 
