@@ -142,17 +142,32 @@ exports.addBooking = (Model) => {
 
 exports.updateOne = (Model) => {
   return catchAsync(async (req, res, next) => {
-    if (req.body?.status === 'checked-out') {
-      try {
-        const data = await Model.findByIdAndUpdate(req.params.id, req.body, {
-          new: true,
-          runValidators: true,
-        });
-
-        if (!data) {
-          next(new AppError('No data found with that ID', 404));
+    try {
+      // Handle bookingSettings conversion
+      if (Array.isArray(req.body.bookingSettings)) {
+        // If the first element is an ID, store it as a string
+        if (typeof req.body.bookingSettings[0] === 'string') {
+          req.body.bookingSettings = req.body.bookingSettings[0];
         }
-        // update the bookedDates array with the booking ID
+        // If the second element is an object, stringify it and store it as a string
+        else if (typeof req.body.bookingSettings[1] === 'object') {
+          req.body.bookingSettings = JSON.stringify(
+            req.body.bookingSettings[1]
+          );
+        }
+      }
+
+      // Proceed with the update
+      const data = await Model.findByIdAndUpdate(req.params.id, req.body, {
+        new: true,
+        runValidators: true,
+      });
+
+      if (!data) {
+        return next(new AppError('No data found with that ID', 404));
+      }
+
+      if (req.body?.status === 'checked-out') {
         await Cabin.findByIdAndUpdate(
           data.cabin,
           {
@@ -167,29 +182,17 @@ exports.updateOne = (Model) => {
             runValidators: true,
           }
         );
-        res.status(200).json({
-          status: 'success',
-          data: data,
-        });
-      } catch (err) {
-        next(new AppError('Server Error, Could not update the data ', 400));
       }
-    } else
-      try {
-        const data = await Model.findByIdAndUpdate(req.params.id, req.body, {
-          new: true,
-          runValidators: true,
-        });
-        if (!data) {
-          next(new AppError('No data found with that ID', 404));
-        }
-        res.status(200).json({
-          status: 'success',
-          data: data,
-        });
-      } catch (err) {
-        next(new AppError('Server Error, Could not update the data ', 400));
-      }
+
+      res.status(200).json({
+        status: 'success',
+        data: data,
+      });
+    } catch (err) {
+      return next(
+        new AppError('Server Error, Could not update the data ', 400)
+      );
+    }
   });
 };
 

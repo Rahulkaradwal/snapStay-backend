@@ -18,8 +18,8 @@ router
   .get(cabinController.getCabin)
   .delete(cabinController.deleteCabin)
   .patch(
-    // cabinController.uploadCabinPhoto,
-    // cabinController.uploadPhotoToS3,
+    cabinController.uploadCabinPhoto,
+    cabinController.uploadPhotoToS3,
     cabinController.updateCabin
   );
 

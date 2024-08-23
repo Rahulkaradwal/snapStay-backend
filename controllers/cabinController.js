@@ -48,8 +48,9 @@ const upload = multer({
 exports.uploadCabinPhoto = upload.single('image');
 
 exports.uploadPhotoToS3 = CatchAsync(async (req, res, next) => {
-  if (!req.file) return next();
-
+  if (req.file === undefined) {
+    return next();
+  }
   const filename = `${req.body.name}-${Date.now()}-${req.file.originalname}`;
 
   try {
@@ -67,9 +68,14 @@ exports.uploadPhotoToS3 = CatchAsync(async (req, res, next) => {
 
     const data = await upload.done();
 
+    req.body = req.body || {}; // Ensure req.body is not undefined
+    req.body.image = data.Location; // Attach the S3 location to req.body
     req.file.filename = filename;
     req.file.location = data.Location;
-    // req.body = req.file.location;
+
+    // req.file.filename = filename;
+    // req.file.location = data.Location;
+    // req.body.image = data.Location;
 
     next();
   } catch (err) {
