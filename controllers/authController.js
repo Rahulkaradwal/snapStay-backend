@@ -340,26 +340,33 @@ exports.resetPassword = (Modal) => {
 
 exports.updatePassword = (Modal) => {
   return catchAsync(async (req, res, next) => {
-    if (
-      !req.body.password &&
-      !req.body.oldPassword &&
-      !req.body.confirmPassword
-    ) {
-      next(new AppError('Please enter the password correctly', 401));
+    const { oldPassword, password, confirmPassword } = req.body;
+
+    if (!password || !oldPassword || !confirmPassword) {
+      return next(
+        new AppError('Please provide all required password fields', 401)
+      );
     }
 
-    const user = await Modal.findById(req.params.id).select('+password');
-
+    const user = await Modal.findById(req.user._id.toString()).select(
+      '+password'
+    );
     if (!user) {
       return next(new AppError('Something went wrong! User not found', 401));
     }
+
     if (!(await user.comparePassword(oldPassword, user.password))) {
       return next(
         new AppError('Unauthroized! Please enter your current password', 401)
       );
     }
+
+    // Check if new password and confirm password match
+    if (password !== confirmPassword) {
+      return next(new AppError('Passwords do not match', 400));
+    }
     user.password = req.body.password;
-    user.passwordConfirm = undefined;
+    user.confirmPassword = undefined;
     await user.save();
 
     const token = SignToken(user._id);
