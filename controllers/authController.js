@@ -361,10 +361,13 @@ exports.updatePassword = (Modal) => {
       );
     }
 
+    console.log('passwords match');
+
     // Check if new password and confirm password match
     if (password !== confirmPassword) {
       return next(new AppError('Passwords do not match', 400));
     }
+    console.log('all good');
     user.password = req.body.password;
     user.confirmPassword = undefined;
     await user.save();

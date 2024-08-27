@@ -1,11 +1,19 @@
 const bookingController = require('../controllers/bookingController');
 const authController = require('../controllers/authController');
 const guestController = require('../controllers/guestController');
+const userController = require('../controllers/userController');
 
 const express = require('express');
 const router = express.Router();
 
-router.route('/getAllBooking').get(bookingController.getAllBookings);
+router
+  .route('/getAllBooking')
+  .get(userController.protect, bookingController.getAllBookings);
+
+router
+  .route('/deleteBooking/:id')
+  .delete(userController.protect, bookingController.deleteBooking);
+
 router
   .route('/getBooking/:id')
   .get(bookingController.getBooking)
